@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { MessageService } from '../services/message.service';
 import { Message } from '../entities/message.entity';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -9,7 +19,9 @@ export class MessageController {
 
   @UseGuards(JwtAuthGuard)
   @Get('conversation/:conversationId')
-  async findByConversationId(@Param('conversationId') conversationId: string): Promise<Message[]> {
+  async findByConversationId(
+    @Param('conversationId') conversationId: string,
+  ): Promise<Message[]> {
     return this.messageService.findByConversationId(conversationId);
   }
 
@@ -41,7 +53,10 @@ export class MessageController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async update(@Param('id') id: string, @Body() data: Partial<Message>): Promise<Message> {
+  async update(
+    @Param('id') id: string,
+    @Body() data: Partial<Message>,
+  ): Promise<Message> {
     return this.messageService.update(id, data);
   }
 

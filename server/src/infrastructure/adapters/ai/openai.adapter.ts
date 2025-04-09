@@ -9,7 +9,9 @@ export class OpenAIAdapter implements AIService {
 
   constructor(private readonly configService: ConfigService) {}
 
-  async generateResponse(messages: { role: string; content: string }[]): Promise<string> {
+  async generateResponse(
+    messages: { role: string; content: string }[],
+  ): Promise<string> {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
 
     if (!apiKey) {
@@ -38,7 +40,10 @@ export class OpenAIAdapter implements AIService {
 
       return response.data.choices[0].message.content;
     } catch (error) {
-      console.error('Error calling OpenAI API:', error.response?.data || error.message);
+      console.error(
+        'Error calling OpenAI API:',
+        error.response?.data || error.message,
+      );
       throw new Error('Failed to generate AI response');
     }
   }

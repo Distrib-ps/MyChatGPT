@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Query, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+  UseGuards,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { ConversationService } from '../services/conversation.service';
 import { Conversation } from '../entities/conversation.entity';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -17,7 +28,10 @@ export class ConversationController {
 
   @UseGuards(JwtAuthGuard)
   @Get('search')
-  async search(@Req() req: Request, @Query('keyword') keyword: string): Promise<Conversation[]> {
+  async search(
+    @Req() req: Request,
+    @Query('keyword') keyword: string,
+  ): Promise<Conversation[]> {
     const userId = req.user['id'];
     return this.conversationService.searchByKeyword(userId, keyword);
   }
@@ -29,20 +43,28 @@ export class ConversationController {
   }
 
   @Get('share/:shareId')
-  async findByShareId(@Param('shareId') shareId: string): Promise<Conversation> {
+  async findByShareId(
+    @Param('shareId') shareId: string,
+  ): Promise<Conversation> {
     return this.conversationService.findByShareId(shareId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Req() req: Request, @Body() data: { title: string }): Promise<Conversation> {
+  async create(
+    @Req() req: Request,
+    @Body() data: { title: string },
+  ): Promise<Conversation> {
     const userId = req.user['id'];
     return this.conversationService.create(userId, data.title);
   }
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async update(@Param('id') id: string, @Body() data: Partial<Conversation>): Promise<Conversation> {
+  async update(
+    @Param('id') id: string,
+    @Body() data: Partial<Conversation>,
+  ): Promise<Conversation> {
     return this.conversationService.update(id, data);
   }
 

@@ -1,4 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Message } from './message.entity';
 
@@ -20,7 +29,9 @@ export class Conversation {
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @OneToMany(() => Message, (message) => message.conversation, { cascade: true })
+  @OneToMany(() => Message, (message) => message.conversation, {
+    cascade: true,
+  })
   messages: Message[];
 
   @CreateDateColumn()

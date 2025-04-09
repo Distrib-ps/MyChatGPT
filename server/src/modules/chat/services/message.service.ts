@@ -35,7 +35,10 @@ export class MessageService {
       .getMany();
   }
 
-  async createUserMessage(conversationId: string, content: string): Promise<Message> {
+  async createUserMessage(
+    conversationId: string,
+    content: string,
+  ): Promise<Message> {
     const message = this.messageRepository.create({
       conversationId,
       content,
@@ -48,16 +51,16 @@ export class MessageService {
   async createAssistantMessage(conversationId: string): Promise<Message> {
     // Get conversation history
     const messages = await this.findByConversationId(conversationId);
-    
+
     // Format messages for AI service
-    const formattedMessages = messages.map(msg => ({
+    const formattedMessages = messages.map((msg) => ({
       role: msg.role === MessageRole.USER ? 'user' : 'assistant',
       content: msg.content,
     }));
-    
+
     // Generate AI response
     const aiResponse = await this.aiService.generateResponse(formattedMessages);
-    
+
     // Create and save the assistant message
     const message = this.messageRepository.create({
       conversationId,

@@ -13,12 +13,12 @@ import { AIService } from '../../infrastructure/interfaces/ai.service.interface'
   imports: [TypeOrmModule.forFeature([Conversation, Message])],
   controllers: [ConversationController, MessageController],
   providers: [
-    ConversationService, 
+    ConversationService,
     MessageService,
     {
       provide: AIService,
       useClass: OpenAIAdapter,
-    }
+    },
   ],
   exports: [ConversationService, MessageService],
 })

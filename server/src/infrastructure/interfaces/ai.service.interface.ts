@@ -8,5 +8,7 @@ export interface AIService {
    * @param messages Array of messages with role and content
    * @returns Promise with the AI response
    */
-  generateResponse(messages: { role: string; content: string }[]): Promise<string>;
+  generateResponse(
+    messages: { role: string; content: string }[],
+  ): Promise<string>;
 }

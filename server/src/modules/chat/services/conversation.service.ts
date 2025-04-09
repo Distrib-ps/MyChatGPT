@@ -32,7 +32,10 @@ export class ConversationService {
     });
   }
 
-  async searchByKeyword(userId: string, keyword: string): Promise<Conversation[]> {
+  async searchByKeyword(
+    userId: string,
+    keyword: string,
+  ): Promise<Conversation[]> {
     return this.conversationRepository
       .createQueryBuilder('conversation')
       .where('conversation.userId = :userId', { userId })
