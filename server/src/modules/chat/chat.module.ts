@@ -6,20 +6,12 @@ import { ConversationService } from './services/conversation.service';
 import { MessageService } from './services/message.service';
 import { ConversationController } from './controllers/conversation.controller';
 import { MessageController } from './controllers/message.controller';
-import { OpenAIAdapter } from '../../infrastructure/adapters/ai/openai.adapter';
-import { AIService } from '../../infrastructure/interfaces/ai.service.interface';
+import { AIModule } from '../ai/ai.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Conversation, Message])],
+  imports: [TypeOrmModule.forFeature([Conversation, Message]), AIModule],
   controllers: [ConversationController, MessageController],
-  providers: [
-    ConversationService,
-    MessageService,
-    {
-      provide: AIService,
-      useClass: OpenAIAdapter,
-    },
-  ],
+  providers: [ConversationService, MessageService],
   exports: [ConversationService, MessageService],
 })
 export class ChatModule {}

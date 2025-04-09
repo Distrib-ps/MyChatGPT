@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AIService } from '../../interfaces/ai.service.interface';
+import { AIService } from '../interfaces/ai.service.interface';
 import axios from 'axios';
 
 @Injectable()

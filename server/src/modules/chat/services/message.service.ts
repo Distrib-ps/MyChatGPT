@@ -1,14 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Message, MessageRole } from '../entities/message.entity';
-import { AIService } from '../../../infrastructure/interfaces/ai.service.interface';
+import { AIService } from '../../ai/interfaces/ai.service.interface';
 
 @Injectable()
 export class MessageService {
   constructor(
     @InjectRepository(Message)
     private messageRepository: Repository<Message>,
+    @Inject('AIService')
     private aiService: AIService,
   ) {}
 
