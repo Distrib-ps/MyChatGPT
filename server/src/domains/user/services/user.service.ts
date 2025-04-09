@@ -20,9 +20,13 @@ export class UserService implements IUserService {
     return this.userRepository.findByUsername(username);
   }
 
-  async create(userData: { username: string; email: string; password: string }): Promise<User> {
+  async create(userData: {
+    username: string;
+    email: string;
+    password: string;
+  }): Promise<User> {
     const hashedPassword = await bcrypt.hash(userData.password, 10);
-    
+
     return this.userRepository.create({
       ...userData,
       password: hashedPassword,
@@ -33,17 +37,17 @@ export class UserService implements IUserService {
 
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.userRepository.findByEmail(email);
-    
+
     if (!user) {
       return null;
     }
-    
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    
+
     if (!isPasswordValid) {
       return null;
     }
-    
+
     return user;
   }
 
@@ -52,9 +56,9 @@ export class UserService implements IUserService {
     if (userData.password) {
       userData.password = await bcrypt.hash(userData.password, 10);
     }
-    
+
     userData.updatedAt = new Date();
-    
+
     return this.userRepository.update(id, userData);
   }
 }

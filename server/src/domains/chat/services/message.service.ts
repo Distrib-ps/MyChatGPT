@@ -15,11 +15,17 @@ export class MessageService implements IMessageService {
     return this.messageRepository.findByConversationId(conversationId);
   }
 
-  async searchInConversation(conversationId: string, keyword: string): Promise<Message[]> {
+  async searchInConversation(
+    conversationId: string,
+    keyword: string,
+  ): Promise<Message[]> {
     return this.messageRepository.searchInConversation(conversationId, keyword);
   }
 
-  async createUserMessage(conversationId: string, content: string): Promise<Message> {
+  async createUserMessage(
+    conversationId: string,
+    content: string,
+  ): Promise<Message> {
     return this.messageRepository.create({
       conversationId,
       content,
@@ -29,7 +35,10 @@ export class MessageService implements IMessageService {
     });
   }
 
-  async createAssistantMessage(conversationId: string, content: string): Promise<Message> {
+  async createAssistantMessage(
+    conversationId: string,
+    content: string,
+  ): Promise<Message> {
     return this.messageRepository.create({
       conversationId,
       content,

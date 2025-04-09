@@ -19,11 +19,11 @@ export class User {
 
   @Column({ unique: true })
   email: string;
-  
+
   @Column()
   @Exclude()
   password: string;
-  
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

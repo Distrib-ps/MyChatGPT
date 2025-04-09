@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Message, MessageRole } from '../../../domains/chat/entities/message.entity';
+import {
+  Message,
+  MessageRole,
+} from '../../../domains/chat/entities/message.entity';
 import axios from 'axios';
 
 export interface IAIAdapter {
@@ -15,7 +18,7 @@ export class ChatGPTAdapter implements IAIAdapter {
 
   async generateResponse(messages: Message[]): Promise<string> {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
-    
+
     if (!apiKey) {
       throw new Error('OPENAI_API_KEY is not defined in environment variables');
     }
@@ -35,14 +38,17 @@ export class ChatGPTAdapter implements IAIAdapter {
         {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
+            Authorization: `Bearer ${apiKey}`,
           },
         },
       );
 
       return response.data.choices[0].message.content;
     } catch (error) {
-      console.error('Error calling ChatGPT API:', error.response?.data || error.message);
+      console.error(
+        'Error calling ChatGPT API:',
+        error.response?.data || error.message,
+      );
       throw new Error('Failed to generate response from ChatGPT');
     }
   }

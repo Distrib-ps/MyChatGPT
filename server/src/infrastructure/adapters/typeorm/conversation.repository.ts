@@ -33,7 +33,10 @@ export class TypeOrmConversationRepository implements IConversationRepository {
     });
   }
 
-  async searchByKeyword(userId: string, keyword: string): Promise<Conversation[]> {
+  async searchByKeyword(
+    userId: string,
+    keyword: string,
+  ): Promise<Conversation[]> {
     return this.conversationRepository.find({
       where: [
         { userId, title: Like(`%${keyword}%`) },
@@ -48,7 +51,10 @@ export class TypeOrmConversationRepository implements IConversationRepository {
     return this.conversationRepository.save(newConversation);
   }
 
-  async update(id: string, conversation: Partial<Conversation>): Promise<Conversation | null> {
+  async update(
+    id: string,
+    conversation: Partial<Conversation>,
+  ): Promise<Conversation | null> {
     await this.conversationRepository.update(id, conversation);
     return this.findById(id);
   }

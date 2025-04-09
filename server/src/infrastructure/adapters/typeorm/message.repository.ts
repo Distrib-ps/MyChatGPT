@@ -22,7 +22,10 @@ export class TypeOrmMessageRepository implements IMessageRepository {
     });
   }
 
-  async searchInConversation(conversationId: string, keyword: string): Promise<Message[]> {
+  async searchInConversation(
+    conversationId: string,
+    keyword: string,
+  ): Promise<Message[]> {
     return this.messageRepository.find({
       where: {
         conversationId,
