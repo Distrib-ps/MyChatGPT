@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,16 +15,16 @@ import { AIModule } from './modules/ai/ai.module';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DB_HOST', 'localhost'),
-        port: configService.get('DB_PORT', 5432),
-        username: configService.get('DB_USERNAME', 'postgres'),
-        password: configService.get('DB_PASSWORD', 'postgres'),
-        database: configService.get('DB_DATABASE', 'mychatgpt'),
+      useFactory: () => ({
+        type: 'sqlite',
+        database: 'mychatgpt.sqlite',
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: configService.get('DB_SYNCHRONIZE', false),
+        synchronize: true,
+        // Options spécifiques à SQLite pour permettre l'écriture
+        extra: {
+          // Autoriser l'écriture sur la base de données
+          readonly: false,
+        },
       }),
     }),
     UserModule,

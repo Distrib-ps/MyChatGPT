@@ -19,7 +19,7 @@ export class Conversation {
   @Column()
   title: string;
 
-  @Column()
+  @Column({ name: 'user_id' })
   userId: string;
 
   @Column({ nullable: true, unique: true })

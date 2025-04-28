@@ -9,11 +9,14 @@ import {
   UseGuards,
   Query,
   Req,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ConversationService } from '../services/conversation.service';
 import { Conversation } from '../entities/conversation.entity';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Request } from 'express';
+import { CreateConversationDto } from '../dto/create-conversation.dto';
+import { UpdateConversationDto } from '../dto/update-conversation.dto';
 
 @Controller('conversations')
 export class ConversationController {
@@ -22,7 +25,9 @@ export class ConversationController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@Req() req: Request): Promise<Conversation[]> {
+    // L'ID utilisateur est stocké dans req.user.id selon la stratégie JWT
     const userId = req.user['id'];
+    console.log('User ID from request:', userId);
     return this.conversationService.findByUserId(userId);
   }
 
@@ -33,6 +38,7 @@ export class ConversationController {
     @Query('keyword') keyword: string,
   ): Promise<Conversation[]> {
     const userId = req.user['id'];
+    console.log('User ID from request (search):', userId);
     return this.conversationService.searchByKeyword(userId, keyword);
   }
 
@@ -53,19 +59,28 @@ export class ConversationController {
   @Post()
   async create(
     @Req() req: Request,
-    @Body() data: { title: string },
+    @Body(new ValidationPipe()) createConversationDto: CreateConversationDto,
   ): Promise<Conversation> {
+    // Afficher l'objet utilisateur complet pour déboguer
+    console.log('User object from request:', req.user);
+
+    // Utiliser l'ID utilisateur depuis req.user.id
     const userId = req.user['id'];
-    return this.conversationService.create(userId, data.title);
+    console.log('User ID for conversation creation:', userId);
+
+    return this.conversationService.create(
+      userId,
+      createConversationDto.title || 'Nouvelle conversation',
+    );
   }
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() data: Partial<Conversation>,
+    @Body(new ValidationPipe()) updateConversationDto: UpdateConversationDto,
   ): Promise<Conversation> {
-    return this.conversationService.update(id, data);
+    return this.conversationService.update(id, updateConversationDto);
   }
 
   @UseGuards(JwtAuthGuard)

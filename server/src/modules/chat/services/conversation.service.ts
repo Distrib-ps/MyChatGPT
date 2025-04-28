@@ -45,12 +45,25 @@ export class ConversationService {
   }
 
   async create(userId: string, title: string): Promise<Conversation> {
-    const conversation = this.conversationRepository.create({
-      userId,
-      title,
-    });
+    console.log('Creating conversation with userId:', userId);
+    console.log('Creating conversation with title:', title);
 
-    return this.conversationRepository.save(conversation);
+    try {
+      // Créer directement l'objet conversation
+      const conversation = new Conversation();
+      conversation.userId = userId;
+      conversation.title = title || 'Nouvelle conversation';
+      // Sauvegarder l'objet
+
+      const savedConversation =
+        await this.conversationRepository.save(conversation);
+
+      console.log('Saved conversation:', savedConversation);
+      return savedConversation;
+    } catch (error) {
+      console.error('Error saving conversation:', error);
+      throw error;
+    }
   }
 
   async update(id: string, data: Partial<Conversation>): Promise<Conversation> {

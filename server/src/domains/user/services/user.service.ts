@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { IUserService } from './user.service.interface';
 import { User } from '../entities/user.entity';
 import { IUserRepository } from '../repositories/user.repository.interface';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UserService implements IUserService {

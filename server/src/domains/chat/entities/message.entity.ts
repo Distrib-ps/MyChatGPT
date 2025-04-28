@@ -9,10 +9,13 @@ import {
 } from 'typeorm';
 import { Conversation } from './conversation.entity';
 
-export enum MessageRole {
-  USER = 'user',
-  ASSISTANT = 'assistant',
-}
+// Utiliser des constantes au lieu d'un enum pour compatibilité SQLite
+export const MessageRole = {
+  USER: 'user',
+  ASSISTANT: 'assistant',
+} as const;
+
+export type MessageRole = (typeof MessageRole)[keyof typeof MessageRole];
 
 @Entity('messages')
 export class Message {
@@ -26,11 +29,11 @@ export class Message {
   content: string;
 
   @Column({
-    type: 'enum',
-    enum: MessageRole,
+    type: 'varchar',
+    length: 20,
     default: MessageRole.USER,
   })
-  role: MessageRole;
+  role: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

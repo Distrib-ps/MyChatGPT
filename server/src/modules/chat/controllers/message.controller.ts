@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  ValidationPipe,
 } from '@nestjs/common';
 import { MessageService } from '../services/message.service';
 import { Message } from '../entities/message.entity';
@@ -38,9 +39,13 @@ export class MessageController {
   @Post('conversation/:conversationId/user')
   async createUserMessage(
     @Param('conversationId') conversationId: string,
-    @Body() data: { content: string },
+    @Body(new ValidationPipe())
+    createMessageDto: import('../dto/create-message.dto').CreateMessageDto,
   ): Promise<Message> {
-    return this.messageService.createUserMessage(conversationId, data.content);
+    return this.messageService.createUserMessage(
+      conversationId,
+      createMessageDto.content,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
@@ -55,9 +60,10 @@ export class MessageController {
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() data: Partial<Message>,
+    @Body(new ValidationPipe())
+    updateMessageDto: import('../dto/update-message.dto').UpdateMessageDto,
   ): Promise<Message> {
-    return this.messageService.update(id, data);
+    return this.messageService.update(id, updateMessageDto);
   }
 
   @UseGuards(JwtAuthGuard)
