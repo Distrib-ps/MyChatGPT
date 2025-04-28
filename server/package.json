@@ -13,12 +13,12 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test": "jest --config jest.config.js",
+    "test:watch": "jest --config jest.config.js --watch",
+    "test:cov": "jest --config jest.config.js --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --config jest.config.js --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:unit": "jest --testRegex=\".*\\.spec\\.ts$\" --exclude=\".*\\.e2e-spec\\.ts$\"",
+    "test:unit": "jest --config jest.config.js --testRegex=\".*\\.spec\\.ts$\" --exclude=\".*\\.e2e-spec\\.ts$\"",
     "test:e2e:cov": "jest --config ./test/jest-e2e.json --coverage",
     "test:all": "npm run test:unit && npm run test:e2e",
     "test:all:cov": "npm run test:cov && npm run test:e2e:cov"
@@ -79,22 +79,5 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "~5.3.3"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
   }
 }
