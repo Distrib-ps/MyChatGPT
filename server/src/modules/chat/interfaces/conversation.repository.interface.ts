@@ -6,10 +6,6 @@ export interface IConversationRepository {
   findByShareId(shareId: string): Promise<Conversation | null>;
   searchByKeyword(userId: string, keyword: string): Promise<Conversation[]>;
   create(conversation: Partial<Conversation>): Promise<Conversation>;
-  update(
-    id: string,
-    conversation: Partial<Conversation>,
-  ): Promise<Conversation | null>;
+  update(id: string, data: Partial<Conversation>): Promise<Conversation | null>;
   delete(id: string): Promise<boolean>;
-  generateShareId(conversationId: string): Promise<string>;
 }

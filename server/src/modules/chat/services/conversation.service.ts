@@ -3,9 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Conversation } from '../entities/conversation.entity';
 import { randomBytes } from 'crypto';
+import { IConversationService } from '../interfaces/conversation.service.interface';
 
 @Injectable()
-export class ConversationService {
+export class ConversationService implements IConversationService {
   constructor(
     @InjectRepository(Conversation)
     private conversationRepository: Repository<Conversation>,
@@ -71,14 +72,20 @@ export class ConversationService {
     return this.findById(id);
   }
 
-  async delete(id: string): Promise<void> {
-    await this.conversationRepository.delete(id);
+  async delete(id: string): Promise<boolean> {
+    const result = await this.conversationRepository.delete(id);
+    return result.affected > 0;
   }
 
   async generateShareId(id: string): Promise<string> {
     const shareId = randomBytes(16).toString('hex');
     await this.conversationRepository.update(id, { shareId });
     return shareId;
+  }
+
+  async generateShareLink(conversationId: string): Promise<string> {
+    const shareId = await this.generateShareId(conversationId);
+    return `/conversations/share/${shareId}`;
   }
 
   async removeShareId(id: string): Promise<void> {

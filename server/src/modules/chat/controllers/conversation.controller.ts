@@ -85,8 +85,9 @@ export class ConversationController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<void> {
-    return this.conversationService.delete(id);
+  async delete(@Param('id') id: string): Promise<{ success: boolean }> {
+    const result = await this.conversationService.delete(id);
+    return { success: result };
   }
 
   @UseGuards(JwtAuthGuard)
