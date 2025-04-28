@@ -68,7 +68,8 @@ export class MessageController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<void> {
-    return this.messageService.delete(id);
+  async remove(@Param('id') id: string): Promise<{ success: boolean }> {
+    await this.messageService.delete(id);
+    return { success: true };
   }
 }

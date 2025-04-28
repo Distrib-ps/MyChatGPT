@@ -10,5 +10,5 @@ export interface IMessageService {
   createUserMessage(conversationId: string, content: string): Promise<Message>;
   createAssistantMessage(conversationId: string): Promise<Message>;
   update(id: string, data: Partial<Message>): Promise<Message | null>;
-  delete(id: string): Promise<boolean>;
+  delete(id: string): Promise<void>;
 }
