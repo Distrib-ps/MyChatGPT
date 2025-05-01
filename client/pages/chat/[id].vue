@@ -1,0 +1,458 @@
+<template>
+  <div class="chat-page">
+    <div class="sidebar">
+      <ConversationList 
+        :conversations="conversations" 
+        :loading="loadingConversations"
+        @create="createConversation"
+        @select="selectConversation"
+      />
+    </div>
+    <div class="main-content">
+      <div v-if="loadingConversation" class="loading-container">
+        <div class="loader"></div>
+        <p class="mt-4 text-gray-600">Chargement de la conversation...</p>
+      </div>
+      
+      <template v-else-if="currentConversation">
+        <div class="chat-header">
+          <h1 class="conversation-title">{{ currentConversation.title || 'Nouvelle conversation' }}</h1>
+          <div class="actions">
+            <button @click="showEditTitle = true" class="action-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <div v-if="showEditTitle" class="edit-title-container">
+          <input 
+            v-model="editedTitle" 
+            type="text" 
+            class="edit-title-input"
+            placeholder="Titre de la conversation"
+            @keydown.enter="updateTitle"
+            @keydown.esc="cancelEditTitle"
+            ref="titleInputRef"
+          />
+          <div class="edit-title-actions">
+            <button @click="updateTitle" class="save-btn">Enregistrer</button>
+            <button @click="cancelEditTitle" class="cancel-btn">Annuler</button>
+          </div>
+        </div>
+        
+        <div class="messages-wrapper">
+          <MessageList :messages="messages" :loading="loadingMessages" />
+        </div>
+        
+        <div class="input-wrapper">
+          <MessageInput :disabled="sendingMessage" @send="sendMessage" />
+        </div>
+      </template>
+      
+      <div v-else class="error-container">
+        <p class="text-red-500">Conversation non trouvée</p>
+        <button @click="router.push('/chat')" class="back-btn">
+          Retour aux conversations
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import ConversationList from '~/components/chat/ConversationList.vue'
+import MessageList from '~/components/chat/MessageList.vue'
+import MessageInput from '~/components/chat/MessageInput.vue'
+
+// Composable pour les conversations (à implémenter)
+const useConversations = () => {
+  const conversations = ref([])
+  const loadingConversations = ref(true)
+  
+  const fetchConversations = async () => {
+    loadingConversations.value = true
+    try {
+      // Simuler un appel API (à remplacer par un vrai appel API)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Données de test (à remplacer par les données réelles)
+      conversations.value = [
+        {
+          id: '1',
+          title: 'Introduction à l\'IA',
+          updatedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: '2',
+          title: 'Comment fonctionne GPT-4',
+          updatedAt: new Date(Date.now() - 86400000).toISOString(), // Hier
+          createdAt: new Date(Date.now() - 86400000).toISOString()
+        }
+      ]
+    } catch (error) {
+      console.error('Erreur lors du chargement des conversations:', error)
+    } finally {
+      loadingConversations.value = false
+    }
+  }
+  
+  const createConversation = async () => {
+    loadingConversations.value = true
+    try {
+      // Simuler un appel API (à remplacer par un vrai appel API)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Créer une nouvelle conversation (à remplacer par un vrai appel API)
+      const newConversation = {
+        id: Date.now().toString(),
+        title: 'Nouvelle conversation',
+        updatedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+      }
+      
+      conversations.value = [newConversation, ...conversations.value]
+      
+      return newConversation
+    } catch (error) {
+      console.error('Erreur lors de la création de la conversation:', error)
+      return null
+    } finally {
+      loadingConversations.value = false
+    }
+  }
+  
+  return {
+    conversations,
+    loadingConversations,
+    fetchConversations,
+    createConversation
+  }
+}
+
+// Composable pour les messages (à implémenter)
+const useMessages = (conversationId) => {
+  const messages = ref([])
+  const loadingMessages = ref(true)
+  const sendingMessage = ref(false)
+  
+  const fetchMessages = async (id) => {
+    if (!id) return
+    
+    loadingMessages.value = true
+    try {
+      // Simuler un appel API (à remplacer par un vrai appel API)
+      await new Promise(resolve => setTimeout(resolve, 800))
+      
+      // Données de test (à remplacer par les données réelles)
+      if (id === '1') {
+        messages.value = [
+          {
+            id: '1',
+            conversationId: '1',
+            content: 'Qu\'est-ce que l\'intelligence artificielle ?',
+            role: 'user',
+            createdAt: new Date(Date.now() - 3600000).toISOString()
+          },
+          {
+            id: '2',
+            conversationId: '1',
+            content: 'L\'intelligence artificielle (IA) est un domaine de l\'informatique qui vise à créer des machines capables de simuler l\'intelligence humaine. Cela inclut l\'apprentissage, le raisonnement, la perception, la compréhension du langage naturel et la résolution de problèmes.\n\nLes systèmes d\'IA peuvent être classés en deux catégories principales :\n\n1. **IA faible ou étroite** : Conçue pour effectuer une tâche spécifique (comme la reconnaissance vocale, la traduction, ou jouer aux échecs). C\'est le type d\'IA que nous utilisons aujourd\'hui.\n\n2. **IA forte ou générale** : Une IA qui pourrait théoriquement effectuer n\'importe quelle tâche intellectuelle qu\'un humain peut faire. Cette forme d\'IA n\'existe pas encore.\n\nLes technologies d\'IA incluent l\'apprentissage automatique (machine learning), l\'apprentissage profond (deep learning), les réseaux de neurones, le traitement du langage naturel, et la vision par ordinateur.',
+            role: 'assistant',
+            createdAt: new Date(Date.now() - 3500000).toISOString()
+          }
+        ]
+      } else {
+        messages.value = []
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des messages:', error)
+    } finally {
+      loadingMessages.value = false
+    }
+  }
+  
+  const sendMessage = async (content) => {
+    if (!conversationId.value || !content.trim()) return
+    
+    sendingMessage.value = true
+    try {
+      // Ajouter le message utilisateur immédiatement
+      const userMessage = {
+        id: `user-${Date.now()}`,
+        conversationId: conversationId.value,
+        content: content,
+        role: 'user',
+        createdAt: new Date().toISOString()
+      }
+      
+      messages.value.push(userMessage)
+      
+      // Simuler un appel API (à remplacer par un vrai appel API)
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      // Simuler la réponse de l'IA (à remplacer par un vrai appel API)
+      const aiResponse = {
+        id: `ai-${Date.now()}`,
+        conversationId: conversationId.value,
+        content: generateAIResponse(content),
+        role: 'assistant',
+        createdAt: new Date().toISOString()
+      }
+      
+      messages.value.push(aiResponse)
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi du message:', error)
+    } finally {
+      sendingMessage.value = false
+    }
+  }
+  
+  // Fonction de démonstration pour générer une réponse IA (à remplacer par un vrai appel API)
+  const generateAIResponse = (userMessage) => {
+    const responses = [
+      `Merci pour votre question sur "${userMessage}". C'est un sujet intéressant à explorer. Voici quelques informations à ce sujet...`,
+      `J'ai bien compris votre demande concernant "${userMessage}". Voici ce que je peux vous dire...`,
+      `Concernant "${userMessage}", plusieurs aspects sont à considérer. Tout d'abord...`,
+      `Votre question sur "${userMessage}" soulève plusieurs points importants. Analysons cela ensemble...`
+    ]
+    
+    return responses[Math.floor(Math.random() * responses.length)] + 
+           "\n\nCeci est une réponse de démonstration. Dans la version finale, cette réponse sera générée par l'API OpenAI."
+  }
+  
+  return {
+    messages,
+    loadingMessages,
+    sendingMessage,
+    fetchMessages,
+    sendMessage
+  }
+}
+
+const route = useRoute()
+const router = useRouter()
+const conversationId = computed(() => route.params.id)
+
+const { conversations, loadingConversations, fetchConversations, createConversation } = useConversations()
+const { messages, loadingMessages, sendingMessage, fetchMessages, sendMessage } = useMessages(conversationId)
+
+const currentConversation = computed(() => {
+  if (!conversationId.value) return null
+  return conversations.value.find(conv => conv.id === conversationId.value)
+})
+
+const loadingConversation = computed(() => {
+  return loadingConversations.value
+})
+
+// Pour l'édition du titre
+const showEditTitle = ref(false)
+const editedTitle = ref('')
+const titleInputRef = ref(null)
+
+onMounted(async () => {
+  await fetchConversations()
+  await fetchMessages(conversationId.value)
+})
+
+watch(conversationId, async (newId) => {
+  if (newId) {
+    await fetchMessages(newId)
+  }
+})
+
+watch(currentConversation, (newConversation) => {
+  if (newConversation) {
+    editedTitle.value = newConversation.title || ''
+  }
+})
+
+const selectConversation = (id) => {
+  router.push(`/chat/${id}`)
+}
+
+const updateTitle = async () => {
+  if (!currentConversation.value) return
+  
+  // Simuler un appel API pour mettre à jour le titre (à remplacer par un vrai appel API)
+  try {
+    // Mettre à jour localement
+    const index = conversations.value.findIndex(c => c.id === currentConversation.value.id)
+    if (index !== -1) {
+      conversations.value[index] = {
+        ...conversations.value[index],
+        title: editedTitle.value
+      }
+    }
+    
+    showEditTitle.value = false
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour du titre:', error)
+  }
+}
+
+const cancelEditTitle = () => {
+  editedTitle.value = currentConversation.value?.title || ''
+  showEditTitle.value = false
+}
+
+watch(showEditTitle, async (newValue) => {
+  if (newValue) {
+    await nextTick()
+    titleInputRef.value?.focus()
+  }
+})
+</script>
+
+<style scoped>
+.chat-page {
+  display: flex;
+  height: calc(100vh - 64px - 48px); /* Hauteur totale moins header et footer */
+}
+
+.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  border-right: 1px solid #e5e7eb;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.loading-container, .error-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.back-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  background-color: #2563eb;
+}
+
+.chat-header {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.conversation-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background-color: #e5e7eb;
+}
+
+.edit-title-container {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+}
+
+.edit-title-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+
+.edit-title-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.save-btn, .cancel-btn {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.save-btn {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+}
+
+.save-btn:hover {
+  background-color: #2563eb;
+}
+
+.cancel-btn {
+  background-color: white;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+}
+
+.cancel-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.messages-wrapper {
+  flex: 1;
+  overflow: hidden;
+}
+
+.input-wrapper {
+  border-top: 1px solid #e5e7eb;
+}
+</style>
