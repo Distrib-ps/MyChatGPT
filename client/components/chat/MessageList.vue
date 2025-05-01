@@ -8,9 +8,9 @@
     </div>
     
     <div v-else class="messages-container">
-      <div v-for="(message, index) in messages" :key="index" class="message-item" :class="message.role">
+      <div v-for="(message, index) in messages" :key="index" class="message-item" :class="normalizeRole(message.role)">
         <div class="message-avatar">
-          <div v-if="message.role === 'user'" class="avatar user-avatar">
+          <div v-if="normalizeRole(message.role) === 'user'" class="avatar user-avatar">
             <span>U</span>
           </div>
           <div v-else class="avatar assistant-avatar">
@@ -45,6 +45,7 @@
 import { ref, watch, nextTick } from 'vue'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
+import { MessageRole } from '~/types/message'
 
 const props = defineProps({
   messages: {
@@ -69,20 +70,30 @@ watch(() => [...props.messages, props.loading], async () => {
 
 // Format message with markdown
 const formatMessage = (content) => {
-  if (!content) return ''
-  // Parse markdown and sanitize HTML
-  const html = marked.parse(content)
-  return DOMPurify.sanitize(html)
+  // Convertir le markdown en HTML et le nettoyer
+  const html = DOMPurify.sanitize(marked.parse(content))
+  return html
 }
 
-// Format time
-const formatTime = (dateString) => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleTimeString('fr-FR', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+const formatTime = (timestamp) => {
+  if (!timestamp) return ''
+  const date = new Date(timestamp)
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
+const normalizeRole = (role) => {
+  if (!role) return 'assistant'
+  
+  // Convertir en minuscules pour la comparaison
+  const normalizedRole = role.toLowerCase()
+  
+  // Vérifier si c'est un rôle utilisateur
+  if (normalizedRole === 'user' || normalizedRole === 'utilisateur') {
+    return 'user'
+  }
+  
+  // Par défaut, retourner assistant
+  return 'assistant'
 }
 </script>
 

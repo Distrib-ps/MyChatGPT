@@ -100,11 +100,29 @@ const useConversations = () => {
     }
   }
   
+  const updateConversation = async (id, title) => {
+    try {
+      const updatedConversation = await conversationsApi.updateConversation(id, title)
+      
+      // Mettre à jour localement
+      const index = conversations.value.findIndex(c => c.id === id)
+      if (index !== -1) {
+        conversations.value[index] = updatedConversation
+      }
+      
+      return updatedConversation
+    } catch (error) {
+      console.error(`Erreur lors de la mise à jour de la conversation ${id}:`, error)
+      throw error
+    }
+  }
+  
   return {
     conversations,
     loadingConversations,
     fetchConversations,
-    createConversation
+    createConversation,
+    updateConversation
   }
 }
 
@@ -161,7 +179,7 @@ const route = useRoute()
 const router = useRouter()
 const conversationId = computed(() => route.params.id)
 
-const { conversations, loadingConversations, fetchConversations, createConversation } = useConversations()
+const { conversations, loadingConversations, fetchConversations, createConversation, updateConversation } = useConversations()
 const { messages, loadingMessages, sendingMessage, fetchMessages, sendMessage } = useMessages(conversationId)
 
 const currentConversation = computed(() => {
@@ -202,17 +220,11 @@ const selectConversation = (id) => {
 const updateTitle = async () => {
   if (!currentConversation.value) return
   
-  // Simuler un appel API pour mettre à jour le titre (à remplacer par un vrai appel API)
   try {
-    // Mettre à jour localement
-    const index = conversations.value.findIndex(c => c.id === currentConversation.value.id)
-    if (index !== -1) {
-      conversations.value[index] = {
-        ...conversations.value[index],
-        title: editedTitle.value
-      }
-    }
+    // Appel API pour mettre à jour le titre sur le serveur
+    await updateConversation(currentConversation.value.id, editedTitle.value)
     
+    // Masquer l'éditeur de titre
     showEditTitle.value = false
   } catch (error) {
     console.error('Erreur lors de la mise à jour du titre:', error)
