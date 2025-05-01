@@ -58,21 +58,83 @@ const props = defineProps({
   }
 })
 
+// Initialiser les boutons de copie lors du montage du composant
+onMounted(() => {
+  addCopyButtons()
+})
+
 const messageListRef = ref(null)
 
-// Scroll to bottom when messages change
+// Scroll to bottom when messages change and add copy buttons
 watch(() => [...props.messages, props.loading], async () => {
   await nextTick()
   if (messageListRef.value) {
     messageListRef.value.scrollTop = messageListRef.value.scrollHeight
+    addCopyButtons()
   }
 }, { deep: true })
 
 // Format message with markdown
 const formatMessage = (content) => {
-  // Convertir le markdown en HTML et le nettoyer
-  const html = DOMPurify.sanitize(marked.parse(content))
-  return html
+  if (!content) return ''
+  
+  // Convertir le markdown en HTML
+  let html = marked.parse(content)
+  
+  // Nettoyer le HTML
+  return DOMPurify.sanitize(html)
+}
+
+// Fonction pour ajouter des boutons de copie aux blocs de code après le rendu
+const addCopyButtons = () => {
+  nextTick(() => {
+    // Sélectionner tous les blocs de code
+    const codeBlocks = document.querySelectorAll('.message-text pre')
+    
+    codeBlocks.forEach((codeBlock) => {
+      // Vérifier si le bloc de code a déjà un bouton de copie
+      if (codeBlock.parentNode.classList.contains('code-block-wrapper')) {
+        return
+      }
+      
+      // Créer un div pour contenir le bouton
+      const buttonContainer = document.createElement('div')
+      buttonContainer.className = 'code-header'
+      
+      // Créer le bouton de copie
+      const copyButton = document.createElement('button')
+      copyButton.className = 'copy-button'
+      copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>'
+      
+      // Ajouter l'événement de clic
+      copyButton.addEventListener('click', () => {
+        const code = codeBlock.querySelector('code').textContent
+        navigator.clipboard.writeText(code).then(() => {
+          copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+          copyButton.classList.add('copied')
+          
+          setTimeout(() => {
+            copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>'
+            copyButton.classList.remove('copied')
+          }, 2000)
+        })
+      })
+      
+      // Ajouter le bouton au container
+      buttonContainer.appendChild(copyButton)
+      
+      // Créer un wrapper pour le bloc de code
+      const wrapper = document.createElement('div')
+      wrapper.className = 'code-block-wrapper'
+      
+      // Ajouter le header au wrapper
+      wrapper.appendChild(buttonContainer)
+      
+      // Remplacer le bloc de code par le wrapper
+      codeBlock.parentNode.insertBefore(wrapper, codeBlock)
+      wrapper.appendChild(codeBlock)
+    })
+  })
 }
 
 const formatTime = (timestamp) => {
@@ -216,6 +278,69 @@ const normalizeRole = (role) => {
     transform: scale(1);
     opacity: 1;
   }
+}
+
+/* Styles pour les blocs de code */
+.code-block-wrapper {
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: #1e293b;
+  border: 1px solid #1e293b;
+  position: relative;
+}
+
+.code-header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.5rem;
+  background-color: #1e293b;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.copy-button {
+  padding: 0.25rem;
+  font-size: 0.75rem;
+  color: white;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+
+
+.copy-button:hover {
+  background-color: #2563eb;
+  color: white;
+}
+
+.copy-button.copied {
+  background-color: #10b981;
+  color: white;
+}
+
+.code-block-wrapper pre {
+  margin: 0;
+  padding: 1rem;
+  background-color: transparent;
+  overflow-x: auto;
+  color: #e2e8f0;
+}
+
+.code-block-wrapper code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 /* Style for markdown content */
