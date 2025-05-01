@@ -5,7 +5,7 @@
         ref="textareaRef"
         v-model="message"
         placeholder="Écrivez votre message ici..."
-        class="message-textarea"
+        class="message-textarea dark:placeholder-gray-400"
         :disabled="disabled"
         @keydown.enter.prevent="handleEnterKey"
         @input="autoResize"
@@ -90,6 +90,13 @@ const autoResize = () => {
   padding: 1rem;
   border-top: 1px solid #e5e7eb;
   background-color: white;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.dark .message-input-container {
+  background-color: #0f172a;
+  border-top-color: #334155;
+  color: #e2e8f0;
 }
 
 .message-form {
@@ -110,6 +117,13 @@ const autoResize = () => {
   font-family: inherit;
   font-size: 0.875rem;
   line-height: 1.5;
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s, box-shadow 0.3s;
+}
+
+.dark .message-textarea {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
 }
 
 .message-textarea:focus {
@@ -117,9 +131,18 @@ const autoResize = () => {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
+.dark .message-textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
 .message-textarea:disabled {
   background-color: #f9fafb;
   cursor: not-allowed;
+}
+
+.dark .message-textarea:disabled {
+  background-color: #0f172a;
 }
 
 .send-button {

@@ -88,6 +88,13 @@ const formatDate = (dateString) => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.dark .conversation-list {
+  background-color: #0f172a;
+  color: #e2e8f0;
+  border-right-color: #334155;
 }
 
 .header {
@@ -96,6 +103,11 @@ const formatDate = (dateString) => {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #e5e7eb;
+  transition: border-color 0.3s;
+}
+
+.dark .header {
+  border-bottom-color: #334155;
 }
 
 .new-conversation-btn {
@@ -135,6 +147,12 @@ const formatDate = (dateString) => {
   width: 24px;
   height: 24px;
   animation: spin 1s linear infinite;
+  transition: border-color 0.3s;
+}
+
+.dark .loader {
+  border-color: #334155;
+  border-top-color: #3b82f6;
 }
 
 @keyframes spin {
@@ -150,6 +168,11 @@ const formatDate = (dateString) => {
   padding: 2rem;
   color: #6b7280;
   flex: 1;
+  transition: color 0.3s;
+}
+
+.dark .empty-state {
+  color: #94a3b8;
 }
 
 .create-btn {
@@ -179,14 +202,28 @@ const formatDate = (dateString) => {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #f3f4f6;
   cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.dark .conversation-item {
+  border-bottom-color: #1e293b;
 }
 
 .conversation-item:hover {
   background-color: #f9fafb;
 }
 
+.dark .conversation-item:hover {
+  background-color: #1e293b;
+}
+
 .conversation-item.active {
   background-color: #eff6ff;
+  border-left: 3px solid #3b82f6;
+}
+
+.dark .conversation-item.active {
+  background-color: #172554;
   border-left: 3px solid #3b82f6;
 }
 
@@ -201,5 +238,10 @@ const formatDate = (dateString) => {
 .conversation-date {
   font-size: 0.75rem;
   color: #6b7280;
+  transition: color 0.3s;
+}
+
+.dark .conversation-date {
+  color: #94a3b8;
 }
 </style>

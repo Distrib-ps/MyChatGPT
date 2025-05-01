@@ -223,10 +223,20 @@ const normalizeRole = (role) => {
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   position: relative;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.dark .message-content {
+  background-color: #1e293b;
+  color: #e2e8f0;
 }
 
 .message-item.user .message-content {
   background-color: #eff6ff;
+}
+
+.dark .message-item.user .message-content {
+  background-color: #172554;
 }
 
 .message-text {
@@ -239,6 +249,11 @@ const normalizeRole = (role) => {
   color: #6b7280;
   margin-top: 0.25rem;
   text-align: right;
+  transition: color 0.3s;
+}
+
+.dark .message-time {
+  color: #94a3b8;
 }
 
 /* Typing indicator */
@@ -343,6 +358,14 @@ const normalizeRole = (role) => {
   line-height: 1.5;
 }
 
+.message-bubble {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  max-width: 80%;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
 /* Style for markdown content */
 :deep(pre) {
   background-color: #1e293b;
@@ -358,6 +381,12 @@ const normalizeRole = (role) => {
   background-color: #e2e8f0;
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.dark :deep(code) {
+  background-color: #334155;
+  color: #e2e8f0;
 }
 
 :deep(pre code) {

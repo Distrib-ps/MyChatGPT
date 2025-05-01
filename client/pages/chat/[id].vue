@@ -254,6 +254,11 @@ watch(showEditTitle, async (newValue) => {
   width: 300px;
   flex-shrink: 0;
   border-right: 1px solid #e5e7eb;
+  transition: border-color 0.3s;
+}
+
+.dark .sidebar {
+  border-right-color: #334155;
 }
 
 .main-content {
@@ -306,6 +311,11 @@ watch(showEditTitle, async (newValue) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: border-color 0.3s;
+}
+
+.dark .chat-header {
+  border-bottom-color: #334155;
 }
 
 .conversation-title {
@@ -329,16 +339,32 @@ watch(showEditTitle, async (newValue) => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.dark .action-btn {
+  background-color: #1e293b;
+  color: #e2e8f0;
 }
 
 .action-btn:hover {
   background-color: #e5e7eb;
 }
 
+.dark .action-btn:hover {
+  background-color: #334155;
+}
+
 .edit-title-container {
   padding: 1rem;
   border-bottom: 1px solid #e5e7eb;
   background-color: #f9fafb;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.dark .edit-title-container {
+  background-color: #1e293b;
+  border-bottom-color: #334155;
 }
 
 .edit-title-input {
@@ -347,6 +373,13 @@ watch(showEditTitle, async (newValue) => {
   border: 1px solid #d1d5db;
   border-radius: 0.375rem;
   margin-bottom: 0.5rem;
+  transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+}
+
+.dark .edit-title-input {
+  border-color: #475569;
+  background-color: #1e293b;
+  color: #e2e8f0;
 }
 
 .edit-title-actions {
@@ -366,6 +399,11 @@ watch(showEditTitle, async (newValue) => {
   background-color: #3b82f6;
   color: white;
   border: none;
+  transition: background-color 0.3s;
+}
+
+.dark .save-btn {
+  background-color: #2563eb;
 }
 
 .save-btn:hover {
@@ -373,13 +411,24 @@ watch(showEditTitle, async (newValue) => {
 }
 
 .cancel-btn {
-  background-color: white;
+  background-color: #f3f4f6;
   color: #4b5563;
   border: 1px solid #d1d5db;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.dark .cancel-btn {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border-color: #475569;
 }
 
 .cancel-btn:hover {
-  background-color: #f3f4f6;
+  background-color: #e5e7eb;
+}
+
+.dark .cancel-btn:hover {
+  background-color: #334155;
 }
 
 .messages-wrapper {
@@ -389,5 +438,10 @@ watch(showEditTitle, async (newValue) => {
 
 .input-wrapper {
   border-top: 1px solid #e5e7eb;
+  transition: border-color 0.3s;
+}
+
+.dark .input-wrapper {
+  border-top-color: #334155;
 }
 </style>
