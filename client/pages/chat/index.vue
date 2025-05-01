@@ -32,32 +32,17 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ConversationList from '~/components/chat/ConversationList.vue'
 
-// Composable pour les conversations (à implémenter)
+import { useConversationsApi } from '~/composables/api/conversations'
+
 const useConversations = () => {
   const conversations = ref([])
   const loadingConversations = ref(true)
+  const conversationsApi = useConversationsApi()
   
   const fetchConversations = async () => {
     loadingConversations.value = true
     try {
-      // Simuler un appel API (à remplacer par un vrai appel API)
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Données de test (à remplacer par les données réelles)
-      conversations.value = [
-        {
-          id: '1',
-          title: 'Introduction à l\'IA',
-          updatedAt: new Date().toISOString(),
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: '2',
-          title: 'Comment fonctionne GPT-4',
-          updatedAt: new Date(Date.now() - 86400000).toISOString(), // Hier
-          createdAt: new Date(Date.now() - 86400000).toISOString()
-        }
-      ]
+      conversations.value = await conversationsApi.getConversations()
     } catch (error) {
       console.error('Erreur lors du chargement des conversations:', error)
     } finally {
@@ -68,19 +53,8 @@ const useConversations = () => {
   const createConversation = async () => {
     loadingConversations.value = true
     try {
-      // Simuler un appel API (à remplacer par un vrai appel API)
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      // Créer une nouvelle conversation (à remplacer par un vrai appel API)
-      const newConversation = {
-        id: Date.now().toString(),
-        title: 'Nouvelle conversation',
-        updatedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString()
-      }
-      
+      const newConversation = await conversationsApi.createConversation()
       conversations.value = [newConversation, ...conversations.value]
-      
       return newConversation
     } catch (error) {
       console.error('Erreur lors de la création de la conversation:', error)

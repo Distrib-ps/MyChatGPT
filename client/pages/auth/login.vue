@@ -5,8 +5,9 @@
         <h1 class="text-3xl font-bold text-center mb-2">MyChatGPT</h1>
         <p class="text-gray-600 text-center mb-8">Connectez-vous pour accéder à vos conversations</p>
       </div>
-      
-      <LoginForm />
+      <div class="login-page">
+        <LoginForm />
+      </div>
     </div>
   </div>
 </template>

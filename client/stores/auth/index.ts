@@ -21,11 +21,13 @@ export const useAuthStore = defineStore('auth', {
         const response = await authApi.login(credentials)
         
         this.user = response.user
-        this.token = response.token
+        this.token = response.access_token
         this.isAuthenticated = true
         
-        // Stocker le token dans localStorage
-        localStorage.setItem('token', response.token)
+        // Stocker le token dans localStorage et dans un cookie
+        localStorage.setItem('token', response.access_token)
+        const tokenCookie = useCookie('auth_token')
+        tokenCookie.value = response.access_token
       } catch (error: any) {
         this.error = typeof error === 'string' ? error : 'Erreur lors de la connexion'
       } finally {
@@ -42,11 +44,13 @@ export const useAuthStore = defineStore('auth', {
         const response = await authApi.register(credentials)
         
         this.user = response.user
-        this.token = response.token
+        this.token = response.access_token
         this.isAuthenticated = true
         
-        // Stocker le token dans localStorage
-        localStorage.setItem('token', response.token)
+        // Stocker le token dans localStorage et dans un cookie
+        localStorage.setItem('token', response.access_token)
+        const tokenCookie = useCookie('auth_token')
+        tokenCookie.value = response.access_token
       } catch (error: any) {
         this.error = typeof error === 'string' ? error : 'Erreur lors de l\'inscription'
       } finally {
@@ -67,8 +71,10 @@ export const useAuthStore = defineStore('auth', {
         this.token = null
         this.isAuthenticated = false
         
-        // Supprimer le token du localStorage
+        // Supprimer le token du localStorage et du cookie
         localStorage.removeItem('token')
+        const tokenCookie = useCookie('auth_token')
+        tokenCookie.value = null
       } catch (error: any) {
         this.error = typeof error === 'string' ? error : 'Erreur lors de la déconnexion'
       } finally {
@@ -83,6 +89,10 @@ export const useAuthStore = defineStore('auth', {
       if (token) {
         this.token = token
         this.isAuthenticated = true
+        
+        // Mettre à jour le cookie
+        const tokenCookie = useCookie('auth_token')
+        tokenCookie.value = token
         
         // TODO: Implémenter la récupération des informations utilisateur
         // à partir du token (appel à /auth/me par exemple)

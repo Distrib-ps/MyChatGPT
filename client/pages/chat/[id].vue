@@ -68,32 +68,17 @@ import ConversationList from '~/components/chat/ConversationList.vue'
 import MessageList from '~/components/chat/MessageList.vue'
 import MessageInput from '~/components/chat/MessageInput.vue'
 
-// Composable pour les conversations (à implémenter)
+import { useConversationsApi } from '~/composables/api/conversations'
+
 const useConversations = () => {
   const conversations = ref([])
   const loadingConversations = ref(true)
+  const conversationsApi = useConversationsApi()
   
   const fetchConversations = async () => {
     loadingConversations.value = true
     try {
-      // Simuler un appel API (à remplacer par un vrai appel API)
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Données de test (à remplacer par les données réelles)
-      conversations.value = [
-        {
-          id: '1',
-          title: 'Introduction à l\'IA',
-          updatedAt: new Date().toISOString(),
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: '2',
-          title: 'Comment fonctionne GPT-4',
-          updatedAt: new Date(Date.now() - 86400000).toISOString(), // Hier
-          createdAt: new Date(Date.now() - 86400000).toISOString()
-        }
-      ]
+      conversations.value = await conversationsApi.getConversations()
     } catch (error) {
       console.error('Erreur lors du chargement des conversations:', error)
     } finally {
@@ -104,19 +89,8 @@ const useConversations = () => {
   const createConversation = async () => {
     loadingConversations.value = true
     try {
-      // Simuler un appel API (à remplacer par un vrai appel API)
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      // Créer une nouvelle conversation (à remplacer par un vrai appel API)
-      const newConversation = {
-        id: Date.now().toString(),
-        title: 'Nouvelle conversation',
-        updatedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString()
-      }
-      
+      const newConversation = await conversationsApi.createConversation()
       conversations.value = [newConversation, ...conversations.value]
-      
       return newConversation
     } catch (error) {
       console.error('Erreur lors de la création de la conversation:', error)
@@ -134,41 +108,20 @@ const useConversations = () => {
   }
 }
 
-// Composable pour les messages (à implémenter)
+import { useMessagesApi } from '~/composables/api/messages'
+
 const useMessages = (conversationId) => {
   const messages = ref([])
   const loadingMessages = ref(true)
   const sendingMessage = ref(false)
+  const messagesApi = useMessagesApi()
   
   const fetchMessages = async (id) => {
     if (!id) return
     
     loadingMessages.value = true
     try {
-      // Simuler un appel API (à remplacer par un vrai appel API)
-      await new Promise(resolve => setTimeout(resolve, 800))
-      
-      // Données de test (à remplacer par les données réelles)
-      if (id === '1') {
-        messages.value = [
-          {
-            id: '1',
-            conversationId: '1',
-            content: 'Qu\'est-ce que l\'intelligence artificielle ?',
-            role: 'user',
-            createdAt: new Date(Date.now() - 3600000).toISOString()
-          },
-          {
-            id: '2',
-            conversationId: '1',
-            content: 'L\'intelligence artificielle (IA) est un domaine de l\'informatique qui vise à créer des machines capables de simuler l\'intelligence humaine. Cela inclut l\'apprentissage, le raisonnement, la perception, la compréhension du langage naturel et la résolution de problèmes.\n\nLes systèmes d\'IA peuvent être classés en deux catégories principales :\n\n1. **IA faible ou étroite** : Conçue pour effectuer une tâche spécifique (comme la reconnaissance vocale, la traduction, ou jouer aux échecs). C\'est le type d\'IA que nous utilisons aujourd\'hui.\n\n2. **IA forte ou générale** : Une IA qui pourrait théoriquement effectuer n\'importe quelle tâche intellectuelle qu\'un humain peut faire. Cette forme d\'IA n\'existe pas encore.\n\nLes technologies d\'IA incluent l\'apprentissage automatique (machine learning), l\'apprentissage profond (deep learning), les réseaux de neurones, le traitement du langage naturel, et la vision par ordinateur.',
-            role: 'assistant',
-            createdAt: new Date(Date.now() - 3500000).toISOString()
-          }
-        ]
-      } else {
-        messages.value = []
-      }
+      messages.value = await messagesApi.getMessages(id)
     } catch (error) {
       console.error('Erreur lors du chargement des messages:', error)
     } finally {
@@ -181,48 +134,18 @@ const useMessages = (conversationId) => {
     
     sendingMessage.value = true
     try {
-      // Ajouter le message utilisateur immédiatement
-      const userMessage = {
-        id: `user-${Date.now()}`,
-        conversationId: conversationId.value,
-        content: content,
-        role: 'user',
-        createdAt: new Date().toISOString()
-      }
-      
+      // Envoyer le message utilisateur
+      const userMessage = await messagesApi.sendUserMessage(conversationId.value, content)
       messages.value.push(userMessage)
       
-      // Simuler un appel API (à remplacer par un vrai appel API)
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // Simuler la réponse de l'IA (à remplacer par un vrai appel API)
-      const aiResponse = {
-        id: `ai-${Date.now()}`,
-        conversationId: conversationId.value,
-        content: generateAIResponse(content),
-        role: 'assistant',
-        createdAt: new Date().toISOString()
-      }
-      
+      // Générer la réponse de l'IA
+      const aiResponse = await messagesApi.generateAIResponse(conversationId.value)
       messages.value.push(aiResponse)
     } catch (error) {
       console.error('Erreur lors de l\'envoi du message:', error)
     } finally {
       sendingMessage.value = false
     }
-  }
-  
-  // Fonction de démonstration pour générer une réponse IA (à remplacer par un vrai appel API)
-  const generateAIResponse = (userMessage) => {
-    const responses = [
-      `Merci pour votre question sur "${userMessage}". C'est un sujet intéressant à explorer. Voici quelques informations à ce sujet...`,
-      `J'ai bien compris votre demande concernant "${userMessage}". Voici ce que je peux vous dire...`,
-      `Concernant "${userMessage}", plusieurs aspects sont à considérer. Tout d'abord...`,
-      `Votre question sur "${userMessage}" soulève plusieurs points importants. Analysons cela ensemble...`
-    ]
-    
-    return responses[Math.floor(Math.random() * responses.length)] + 
-           "\n\nCeci est une réponse de démonstration. Dans la version finale, cette réponse sera générée par l'API OpenAI."
   }
   
   return {
