@@ -96,8 +96,69 @@ export class ConversationService implements IConversationService {
   }
 
   async delete(id: string): Promise<boolean> {
-    const result = await this.conversationRepository.delete(id);
-    return result.affected > 0;
+    console.log(`Service - Tentative de suppression de la conversation ${id}`);
+    try {
+      // Vérifier si la conversation existe avant de la supprimer
+      const conversation = await this.conversationRepository.findOne({
+        where: { id },
+        relations: ['messages'],
+      });
+
+      if (!conversation) {
+        console.log(`Service - Conversation ${id} non trouvée`);
+        return false;
+      }
+
+      console.log(
+        `Service - Conversation ${id} trouvée, suppression en cours...`,
+      );
+
+      // Utiliser une transaction pour s'assurer que tout est supprimé correctement
+      const queryRunner =
+        this.conversationRepository.manager.connection.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+
+      try {
+        // Supprimer d'abord les messages associés à la conversation
+        if (conversation.messages && conversation.messages.length > 0) {
+          console.log(
+            `Service - Suppression de ${conversation.messages.length} messages associés`,
+          );
+          await queryRunner.manager.query(
+            'DELETE FROM messages WHERE "conversationId" = ?',
+            [id],
+          );
+        }
+
+        // Ensuite, supprimer la conversation
+        await queryRunner.manager.delete('conversations', { id });
+
+        // Valider la transaction
+        await queryRunner.commitTransaction();
+        console.log(
+          `Service - Conversation et messages associés supprimés avec succès`,
+        );
+        return true;
+      } catch (transactionError) {
+        // En cas d'erreur, annuler la transaction
+        await queryRunner.rollbackTransaction();
+        console.error(
+          `Service - Erreur lors de la transaction de suppression:`,
+          transactionError,
+        );
+        throw transactionError;
+      } finally {
+        // Libérer le queryRunner
+        await queryRunner.release();
+      }
+    } catch (error) {
+      console.error(
+        `Service - Erreur lors de la suppression de la conversation ${id}:`,
+        error,
+      );
+      throw error;
+    }
   }
 
   async generateShareId(id: string): Promise<string> {

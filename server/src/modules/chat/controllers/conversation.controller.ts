@@ -107,9 +107,50 @@ export class ConversationController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async delete(@Param('id') id: string): Promise<{ success: boolean }> {
-    const result = await this.conversationService.delete(id);
-    return { success: result };
+  async delete(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<{ success: boolean; message?: string }> {
+    console.log(
+      `Controller - Tentative de suppression de la conversation ${id} par l'utilisateur ${req.user['id']}`,
+    );
+    try {
+      // Vérifier d'abord si la conversation existe
+      const conversation = await this.conversationService.findById(id);
+
+      if (!conversation) {
+        console.log(`Controller - Conversation ${id} non trouvée`);
+        return {
+          success: false,
+          message: `Conversation avec l'ID ${id} non trouvée`,
+        };
+      }
+
+      // Vérifier si l'utilisateur est le propriétaire de la conversation
+      if (conversation.userId !== req.user['id']) {
+        console.log(
+          `Controller - L'utilisateur ${req.user['id']} n'est pas autorisé à supprimer la conversation ${id}`,
+        );
+        return {
+          success: false,
+          message:
+            "Vous n'\u00eates pas autorisé à supprimer cette conversation",
+        };
+      }
+
+      const result = await this.conversationService.delete(id);
+      console.log(`Controller - Résultat de la suppression:`, result);
+      return { success: result };
+    } catch (error) {
+      console.error(
+        `Controller - Erreur lors de la suppression de la conversation ${id}:`,
+        error,
+      );
+      throw new HttpException(
+        'Erreur lors de la suppression de la conversation',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @UseGuards(JwtAuthGuard)

@@ -46,8 +46,35 @@ export const useConversationsApi = () => {
   }
 
   const deleteConversation = async (id: string): Promise<void> => {
+    console.log(`API - Début de la suppression de la conversation ${id}`)
     try {
-      await api.delete(`/conversations/${id}`)
+      // Vérifier si le token est présent
+      const token = localStorage.getItem('token')
+      if (!token) {
+        console.warn('Aucun token d\'authentification trouvé pour la suppression')
+        throw new Error('Aucun token d\'authentification trouvé')
+      }
+      
+      // Utiliser directement fetch pour la requête DELETE
+      const baseURL = api.defaults.baseURL || 'http://localhost:3000'
+      const url = `${baseURL}/conversations/${id}`
+      console.log(`API - Envoi de la requête DELETE à ${url}`)
+      
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }))
+        console.error(`API - Erreur HTTP: ${response.status}`, errorData)
+        throw new Error(errorData.message || `Erreur HTTP: ${response.status}`)
+      }
+      
+      console.log(`API - Conversation ${id} supprimée avec succès`)
     } catch (error) {
       console.error(`Error deleting conversation ${id}:`, error)
       throw error

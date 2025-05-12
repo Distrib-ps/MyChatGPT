@@ -6,6 +6,9 @@
         :loading="loadingConversations"
         @create="createConversation"
         @select="selectConversation"
+        @delete="deleteConversation"
+        @search="searchConversations"
+        @clearSearch="clearSearch"
       />
     </div>
     <div class="main-content">
@@ -64,16 +67,88 @@ const useConversations = () => {
     }
   }
   
+  const deleteConversation = async (id) => {
+    console.log(`Index Page - Début de la suppression de la conversation: ${id}`)
+    console.log('Type de l\'ID:', typeof id, 'Valeur:', id)
+    console.log('conversationsApi disponible:', !!conversationsApi, conversationsApi)
+    
+    // Vérifier que l'ID est valide
+    if (!id) {
+      console.error('ID de conversation invalide')
+      return
+    }
+    
+    loadingConversations.value = true
+    
+    try {
+      console.log('Avant appel API deleteConversation')
+      // Appel direct avec fetch pour déboguer
+      const token = localStorage.getItem('token')
+      if (!token) {
+        throw new Error('Aucun token d\'authentification trouvé')
+      }
+      
+      const response = await fetch(`http://localhost:3000/conversations/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      console.log('Réponse de l\'API:', response)
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }))
+        throw new Error(errorData.message || `Erreur HTTP: ${response.status}`)
+      }
+      
+      console.log('Index Page - Suppression réussie, mise à jour de la liste')
+      // Mettre à jour la liste des conversations après la suppression
+      conversations.value = conversations.value.filter(c => c.id !== id)
+      
+      // Afficher un message de succès
+      alert('Conversation supprimée avec succès')
+    } catch (error) {
+      console.error(`Erreur lors de la suppression de la conversation ${id}:`, error)
+      // Afficher un message d'erreur
+      alert(`Erreur lors de la suppression de la conversation: ${error.message || 'Erreur inconnue'}`)
+    } finally {
+      loadingConversations.value = false
+    }
+  }
+
+  const searchConversations = async (keyword) => {
+    console.log(`Index Page - Recherche de conversations avec le mot-clé: ${keyword}`)
+    loadingConversations.value = true
+    try {
+      conversations.value = await conversationsApi.searchConversations(keyword)
+    } catch (error) {
+      console.error('Erreur lors de la recherche de conversations:', error)
+    } finally {
+      loadingConversations.value = false
+    }
+  }
+
+  const clearSearch = async () => {
+    console.log('Index Page - Effacement de la recherche')
+    // Recharger toutes les conversations
+    fetchConversations()
+  }
+
   return {
     conversations,
     loadingConversations,
     fetchConversations,
-    createConversation
+    createConversation,
+    deleteConversation,
+    searchConversations,
+    clearSearch
   }
 }
 
 const router = useRouter()
-const { conversations, loadingConversations, fetchConversations, createConversation } = useConversations()
+const { conversations, loadingConversations, fetchConversations, createConversation, deleteConversation, searchConversations, clearSearch } = useConversations()
 
 onMounted(async () => {
   await fetchConversations()
