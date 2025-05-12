@@ -113,7 +113,11 @@
         </div>
         
         <div class="messages-wrapper">
-          <MessageList :messages="messages" :loading="sendingMessage" />
+          <MessageList 
+            :messages="messages" 
+            :loading="sendingMessage" 
+            @update-message="handleMessageUpdate"
+          />
         </div>
         
         <div class="input-wrapper">
@@ -396,12 +400,80 @@ const useMessages = (conversationId) => {
     }
   }
   
+  const handleMessageUpdate = async ({ messageId, content, conversationId: convId }) => {
+    try {
+      console.log('Composable useMessages - handleMessageUpdate - Début', { messageId, content, convId })
+      
+      // Vérifier si les données nécessaires sont présentes
+      if (!messageId || !content) {
+        console.error('Composable useMessages - ERREUR: messageId ou content manquant', { messageId, content })
+        return
+      }
+      
+      // Utiliser l'ID de conversation actuel si convId n'est pas défini
+      const conversationIdToUse = convId || conversationId.value
+      console.log('Composable useMessages - ID de conversation utilisé:', conversationIdToUse)
+      
+      // Trouver l'index du message à mettre à jour
+      const messageIndex = messages.value.findIndex(msg => msg.id === messageId)
+      if (messageIndex === -1) {
+        console.error(`Composable useMessages - Message avec l'ID ${messageId} non trouvé`)
+        return
+      }
+      
+      // Trouver l'index de la réponse de l'IA associée (à supprimer)
+      const aiResponseIndex = messageIndex + 1
+      const hasAiResponse = aiResponseIndex < messages.value.length && 
+                           messages.value[aiResponseIndex].role.toLowerCase() === 'assistant'
+      
+      console.log('Composable useMessages - Mise à jour du message utilisateur via API')
+      // Mettre à jour le message utilisateur
+      const updatedMessage = await messagesApi.updateMessage(messageId, content)
+      console.log('Composable useMessages - Message mis à jour:', updatedMessage)
+      
+      // Mettre à jour le message dans le tableau local
+      messages.value[messageIndex] = updatedMessage
+      
+      // Supprimer la réponse de l'IA si elle existe
+      if (hasAiResponse) {
+        console.log('Composable useMessages - Suppression de la réponse IA associée')
+        const aiMessageId = messages.value[aiResponseIndex].id
+        await messagesApi.deleteMessage(aiMessageId)
+        messages.value.splice(aiResponseIndex, 1)
+      }
+      
+      // Activer l'indicateur "L'IA réfléchit..."
+      sendingMessage.value = true
+      
+      console.log('Composable useMessages - Génération d\'une nouvelle réponse IA')
+      // Générer une nouvelle réponse de l'IA
+      const newAiResponse = await messagesApi.generateAIResponse(conversationIdToUse)
+      console.log('Composable useMessages - Nouvelle réponse IA générée:', newAiResponse)
+      
+      // Ajouter la nouvelle réponse de l'IA
+      if (hasAiResponse) {
+        // Insérer la nouvelle réponse à la même position que l'ancienne
+        messages.value.splice(aiResponseIndex, 0, newAiResponse)
+      } else {
+        // Ajouter la nouvelle réponse à la fin
+        messages.value.push(newAiResponse)
+      }
+      
+      console.log('Composable useMessages - handleMessageUpdate - Terminé avec succès')
+    } catch (error) {
+      console.error('Composable useMessages - Erreur lors de la mise à jour du message:', error)
+    } finally {
+      sendingMessage.value = false
+    }
+  }
+  
   return {
     messages,
     loadingMessages,
     sendingMessage,
     fetchMessages,
-    sendMessage
+    sendMessage,
+    handleMessageUpdate
   }
 }
 
@@ -431,7 +503,8 @@ const {
   loadingMessages, 
   sendingMessage, 
   fetchMessages, 
-  sendMessage 
+  sendMessage,
+  handleMessageUpdate 
 } = useMessages(conversationId)
 
 // Computed properties

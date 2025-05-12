@@ -37,7 +37,13 @@ export const useMessagesApi = () => {
 
   const updateMessage = async (id: string, content: string): Promise<Message> => {
     try {
+      console.log(`API - Début de la mise à jour du message ${id} avec contenu:`, content)
+      console.log(`API - URL: /messages/${id}`)
+      console.log(`API - Payload:`, { content })
+      
       const response = await api.put(`/messages/${id}`, { content })
+      
+      console.log(`API - Réponse de mise à jour du message:`, response.data)
       return response.data
     } catch (error) {
       console.error(`Error updating message ${id}:`, error)

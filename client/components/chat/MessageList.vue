@@ -24,8 +24,42 @@
           </div>
         </div>
         <div class="message-content">
-          <div class="message-text" v-html="formatMessage(message.content)"></div>
-          <div class="message-time">{{ formatTime(message.createdAt) }}</div>
+          <!-- Mode d'édition pour les messages utilisateur -->
+          <div v-if="editingMessageId === message.id" class="edit-message-container">
+            <textarea 
+              v-model="editedMessageContent" 
+              class="edit-message-textarea"
+              @keydown.enter.ctrl="updateMessage(message)"
+              @keydown.esc="cancelEdit"
+              :id="`edit-textarea-${message.id}`"
+            ></textarea>
+            <div class="edit-actions">
+              <button @click="updateMessage(message)" class="save-edit-btn">Enregistrer</button>
+              <button @click="cancelEdit" class="cancel-edit-btn">Annuler</button>
+              <div class="edit-hint">Ctrl+Enter pour enregistrer</div>
+            </div>
+          </div>
+          
+          <!-- Affichage normal du message -->
+          <div v-else class="message-text" v-html="formatMessage(message.content)"></div>
+          
+          <div class="message-footer">
+            <div class="message-time">{{ formatTime(message.createdAt) }}</div>
+            
+            <!-- Boutons d'action pour les messages utilisateur -->
+            <div v-if="normalizeRole(message.role) === 'user' && !loading" class="message-actions">
+              <button 
+                @click="startEdit(message)" 
+                class="edit-message-btn" 
+                title="Modifier et regénérer"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -68,6 +102,13 @@ const props = defineProps({
     default: false
   }
 })
+
+const emit = defineEmits(['update-message'])
+
+// Variables pour l'édition des messages
+const editingMessageId = ref(null)
+const editedMessageContent = ref('')
+const editTextarea = ref(null)
 
 // Initialiser les boutons de copie lors du montage du composant
 onMounted(() => {
@@ -168,6 +209,63 @@ const normalizeRole = (role) => {
   // Par défaut, retourner assistant
   return 'assistant'
 }
+
+// Méthodes pour l'édition des messages
+const startEdit = (message) => {
+  // Enregistrer l'ID du message en cours d'édition
+  editingMessageId.value = message.id
+  // Initialiser le contenu du message à éditer
+  editedMessageContent.value = message.content
+  
+  // Focus sur le textarea après le rendu
+  nextTick(() => {
+    // Utiliser l'ID unique du textarea pour le cibler
+    const textareaId = `edit-textarea-${message.id}`
+    const textarea = document.getElementById(textareaId)
+    if (textarea) {
+      textarea.focus()
+      // Placer le curseur à la fin du texte
+      textarea.selectionStart = textarea.value.length
+    }
+  })
+}
+
+const cancelEdit = () => {
+  // Réinitialiser les variables d'édition
+  editingMessageId.value = null
+  editedMessageContent.value = ''
+}
+
+const updateMessage = (message) => {
+  // Vérifier que le contenu n'est pas vide
+  if (!editedMessageContent.value.trim()) {
+    return
+  }
+  
+  // Déboguer le message complet
+  console.log('MessageList - message complet:', message)
+  
+  // Vérifier si conversationId est défini
+  if (!message.conversationId) {
+    console.error('MessageList - ERREUR: conversationId est manquant dans le message!')
+  }
+  
+  console.log('MessageList - updateMessage:', {
+    messageId: message.id,
+    content: editedMessageContent.value.trim(),
+    conversationId: message.conversationId
+  })
+  
+  // Émettre un événement pour mettre à jour le message et regénérer la réponse
+  emit('update-message', {
+    messageId: message.id,
+    content: editedMessageContent.value.trim(),
+    conversationId: message.conversationId || props.messages[0]?.conversationId // Fallback au premier message si disponible
+  })
+  
+  // Réinitialiser le mode d'édition
+  cancelEdit()
+}
 </script>
 
 <style scoped>
@@ -265,6 +363,130 @@ const normalizeRole = (role) => {
 
 .dark .message-time {
   color: #94a3b8;
+}
+
+.message-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+.message-actions {
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.message-item:hover .message-actions {
+  opacity: 1;
+}
+
+.edit-message-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.edit-message-btn:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.dark .edit-message-btn {
+  color: #9ca3af;
+}
+
+.dark .edit-message-btn:hover {
+  background-color: #374151;
+  color: #f9fafb;
+}
+
+.edit-message-container {
+  width: 100%;
+}
+
+.edit-message-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-family: inherit;
+  font-size: inherit;
+  resize: vertical;
+  background-color: #ffffff;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.dark .edit-message-textarea {
+  background-color: #1f2937;
+  border-color: #4b5563;
+  color: #f9fafb;
+}
+
+.edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.save-edit-btn,
+.cancel-edit-btn {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.save-edit-btn {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+}
+
+.save-edit-btn:hover {
+  background-color: #2563eb;
+}
+
+.cancel-edit-btn {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+}
+
+.cancel-edit-btn:hover {
+  background-color: #e5e7eb;
+}
+
+.dark .cancel-edit-btn {
+  background-color: #374151;
+  color: #e5e7eb;
+  border-color: #4b5563;
+}
+
+.dark .cancel-edit-btn:hover {
+  background-color: #4b5563;
+}
+
+.edit-hint {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-left: auto;
+}
+
+.dark .edit-hint {
+  color: #9ca3af;
 }
 
 /* Thinking container */
