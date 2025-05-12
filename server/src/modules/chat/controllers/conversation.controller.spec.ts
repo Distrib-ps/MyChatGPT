@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConversationController } from './conversation.controller';
 import { ConversationService } from '../services/conversation.service';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Request } from 'express';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CreateConversationDto } from '../dto/create-conversation.dto';
 import { UpdateConversationDto } from '../dto/update-conversation.dto';
 
@@ -169,10 +169,55 @@ describe('ConversationController', () => {
   describe('delete', () => {
     it('should delete a conversation and return success status', async () => {
       const conversationId = '1';
+      const userId = 'user-1';
+
+      // Mock findById pour simuler qu'une conversation existe
+      jest.spyOn(service, 'findById').mockResolvedValue({
+        id: conversationId,
+        userId: userId,
+        title: 'Test Conversation',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        messages: [],
+      } as any);
 
       jest.spyOn(service, 'delete').mockResolvedValue(true);
 
-      const result = await controller.delete(conversationId);
+      // Créer un objet Request mock avec un utilisateur
+      const mockRequest = {
+        user: { id: 'user-1' },
+        // Ajouter les propriétés minimales nécessaires pour satisfaire le type Request
+        get: jest.fn(),
+        header: jest.fn(),
+        accepts: jest.fn(),
+        acceptsCharsets: jest.fn(),
+        acceptsEncodings: jest.fn(),
+        acceptsLanguages: jest.fn(),
+        param: jest.fn(),
+        is: jest.fn(),
+        app: {},
+        baseUrl: '',
+        body: {},
+        cookies: {},
+        fresh: false,
+        hostname: '',
+        ip: '',
+        ips: [],
+        method: 'DELETE',
+        originalUrl: '',
+        params: {},
+        path: '',
+        protocol: '',
+        query: {},
+        route: {},
+        secure: false,
+        signedCookies: {},
+        stale: true,
+        subdomains: [],
+        xhr: false,
+      } as unknown as Request;
+
+      const result = await controller.delete(conversationId, mockRequest);
 
       expect(result).toEqual({ success: true });
       expect(service.delete).toHaveBeenCalledWith(conversationId);
