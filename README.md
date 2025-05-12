@@ -53,13 +53,56 @@ src/
 - Affichage correct du code généré par l'IA
 - Modification et renvoi de messages à l'IA
 
+## Routes API
+
+### Authentification
+
+- `POST /auth/register` - Inscription d'un nouvel utilisateur
+- `POST /auth/login` - Connexion d'un utilisateur
+- `POST /auth/logout` - Déconnexion d'un utilisateur
+
+### Conversations
+
+- `GET /conversations` - Récupérer toutes les conversations de l'utilisateur
+- `GET /conversations/:id` - Récupérer une conversation spécifique
+- `POST /conversations` - Créer une nouvelle conversation
+- `PUT /conversations/:id` - Mettre à jour une conversation
+- `DELETE /conversations/:id` - Supprimer une conversation
+- `GET /conversations/search?q=<query>` - Rechercher des conversations par mot-clé
+
+### Messages
+
+- `GET /conversations/:conversationId/messages` - Récupérer tous les messages d'une conversation
+- `POST /conversations/:conversationId/messages` - Ajouter un message à une conversation
+- `PUT /conversations/:conversationId/messages/:id` - Modifier un message
+- `DELETE /conversations/:conversationId/messages/:id` - Supprimer un message
+
+### Partage
+
+- `POST /conversations/:id/share` - Partager une conversation
+- `GET /share/:shareId` - Accéder à une conversation partagée
+
 ## Technologies
 
-- **Backend**: NestJS, TypeORM, PostgreSQL
-- **Frontend**: NuxtJS
-- **Tests**: Jest (backend), Cypress (frontend)
-- **CI/CD**: GitHub Actions
+### Backend
+- **Framework**: NestJS (TypeScript)
+- **ORM**: TypeORM
+- **Base de données**: PostgreSQL
+- **Tests unitaires**: Jest
 - **Authentification**: JWT
+
+### Frontend
+- **Framework**: NuxtJS 3 (Vue.js 3)
+- **CSS**: TailwindCSS
+- **State Management**: Pinia
+- **Tests unitaires**: Vitest
+- **Tests E2E**: Playwright
+
+### Outils de qualité de code
+- **Linter**: ESLint
+- **Formatage**: Prettier
+- **Hooks Git**: Husky
+- **Validation des commits**: commitlint
 
 ## Installation
 
@@ -95,8 +138,38 @@ npm run start:dev
 cd server
 npm run test
 
+# Exécuter les tests avec couverture
+npm run test:cov
+
 # Exécuter les tests e2e
 npm run test:e2e
+```
+
+### Frontend
+
+```bash
+# Exécuter les tests unitaires
+cd client
+npm run test
+
+# Exécuter les tests en mode watch
+npm run test:watch
+
+# Exécuter les tests avec couverture
+npm run test:coverage
+```
+
+### Tests E2E (Playwright)
+
+```bash
+# Exécuter tous les tests E2E
+npm run test:e2e
+
+# Exécuter le test de base
+npm run test:e2e:basic
+
+# Exécuter le test de flux de connexion
+npm run test:e2e:login
 ```
 
 ## Contribution
