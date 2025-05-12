@@ -28,6 +28,7 @@
   "devDependencies": {
     "@nuxt/test-utils": "^3.17.2",
     "@pinia/testing": "^1.0.1",
+    "@playwright/test": "^1.52.0",
     "@types/node": "^22.15.3",
     "@vitejs/plugin-vue": "^5.2.3",
     "@vue/test-utils": "^2.4.6",
