@@ -23,20 +23,26 @@ Le projet est divisé en trois parties principales :
 
 ### Backend (NestJS)
 
-L'architecture du backend suit une structure DDD et Hexagonale :
+L'architecture du backend suit une structure modulaire typique de NestJS :
 
 ```
 src/
-  domains/
-    <domaine>/
-      entities/
-      services/
-      repositories/
-  application/
-    usecases/
-  infrastructure/
-    adapters/
+  modules/
+    ai/
+      # Module de gestion de l'IA
+    auth/
+      # Module d'authentification
+    chat/
+      controllers/  # Points d'entrée API
+      dto/          # Objets de transfert de données
+      entities/     # Modèles de données
+      interfaces/   # Définitions de types
+      services/     # Logique métier
+    user/
+      # Module de gestion des utilisateurs
 ```
+
+Chaque module est responsable d'une fonctionnalité spécifique de l'application et contient tous les composants nécessaires à son fonctionnement.
 
 ## Fonctionnalités
 
