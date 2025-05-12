@@ -8,7 +8,13 @@
     </div>
     
     <div v-else class="messages-container">
-      <div v-for="(message, index) in messages" :key="index" class="message-item" :class="normalizeRole(message.role)">
+      <div 
+        v-for="(message, index) in messages" 
+        :key="index" 
+        :id="`message-${message.id}`"
+        class="message-item" 
+        :class="normalizeRole(message.role)"
+      >
         <div class="message-avatar">
           <div v-if="normalizeRole(message.role) === 'user'" class="avatar user-avatar">
             <span>U</span>

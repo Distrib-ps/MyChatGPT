@@ -37,12 +37,35 @@ export class ConversationService implements IConversationService {
     userId: string,
     keyword: string,
   ): Promise<Conversation[]> {
-    return this.conversationRepository
-      .createQueryBuilder('conversation')
-      .where('conversation.userId = :userId', { userId })
-      .andWhere('conversation.title LIKE :keyword', { keyword: `%${keyword}%` })
-      .orderBy('conversation.updatedAt', 'DESC')
-      .getMany();
+    console.log(
+      `Service - Recherche pour l'utilisateur ${userId} avec le mot-clé: "${keyword}"`,
+    );
+
+    // Si le mot-clé est vide, retourner toutes les conversations
+    if (!keyword || keyword.trim() === '') {
+      console.log('Mot-clé vide, retour de toutes les conversations');
+      return this.findByUserId(userId);
+    }
+
+    try {
+      // Utiliser LOWER pour une recherche insensible à la casse
+      const results = await this.conversationRepository
+        .createQueryBuilder('conversation')
+        .where('conversation.userId = :userId', { userId })
+        .andWhere('LOWER(conversation.title) LIKE LOWER(:keyword)', {
+          keyword: `%${keyword.toLowerCase()}%`,
+        })
+        .orderBy('conversation.updatedAt', 'DESC')
+        .getMany();
+
+      console.log(
+        `Service - ${results.length} conversations trouvées pour le mot-clé "${keyword}"`,
+      );
+      return results;
+    } catch (error) {
+      console.error('Erreur lors de la recherche de conversations:', error);
+      throw error;
+    }
   }
 
   async create(userId: string, title: string): Promise<Conversation> {

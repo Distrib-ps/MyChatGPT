@@ -6,6 +6,8 @@
         :loading="loadingConversations"
         @create="createConversation"
         @select="selectConversation"
+        @search="searchConversations"
+        @clearSearch="clearSearch"
       />
     </div>
     <div class="main-content">
@@ -42,6 +44,13 @@
           </div>
         </div>
         
+        <div class="search-wrapper">
+          <MessageSearch 
+            :conversation-id="currentConversation.id" 
+            @scroll-to-message="scrollToMessage"
+          />
+        </div>
+        
         <div class="messages-wrapper">
           <MessageList :messages="messages" :loading="sendingMessage" />
         </div>
@@ -67,12 +76,14 @@ import { useRoute, useRouter } from 'vue-router'
 import ConversationList from '~/components/chat/ConversationList.vue'
 import MessageList from '~/components/chat/MessageList.vue'
 import MessageInput from '~/components/chat/MessageInput.vue'
+import MessageSearch from '~/components/chat/MessageSearch.vue'
 
 import { useConversationsApi } from '~/composables/api/conversations'
 
 const useConversations = () => {
   const conversations = ref([])
   const loadingConversations = ref(true)
+  const isSearching = ref(false)
   const conversationsApi = useConversationsApi()
   
   const fetchConversations = async () => {
@@ -86,15 +97,50 @@ const useConversations = () => {
     }
   }
   
+  const searchConversations = async (keyword) => {
+    console.log('Page - Recherche de conversations avec le mot-clé:', keyword)
+    isSearching.value = true
+    loadingConversations.value = true
+    
+    try {
+      // Appeler l'API de recherche
+      const results = await conversationsApi.searchConversations(keyword)
+      console.log(`Résultats de la recherche: ${results.length} conversations trouvées`)
+      
+      // Mettre à jour la liste des conversations avec les résultats de la recherche
+      conversations.value = results
+    } catch (error) {
+      console.error(`Erreur lors de la recherche de conversations avec le mot-clé: ${keyword}`, error)
+    } finally {
+      loadingConversations.value = false
+    }
+  }
+  
+  const clearSearch = async () => {
+    console.log('Effacement de la recherche')
+    isSearching.value = false
+    loadingConversations.value = true
+    
+    try {
+      // Recharger toutes les conversations
+      await fetchConversations()
+    } catch (error) {
+      console.error('Erreur lors du rechargement des conversations:', error)
+    } finally {
+      loadingConversations.value = false
+    }
+  }
+  
   const createConversation = async () => {
     loadingConversations.value = true
     try {
-      const newConversation = await conversationsApi.createConversation()
-      conversations.value = [newConversation, ...conversations.value]
-      return newConversation
+      const newConversation = await conversationsApi.createConversation('Nouvelle conversation')
+      await fetchConversations()
+      
+      // Rediriger vers la nouvelle conversation
+      router.push(`/chat/${newConversation.id}`)
     } catch (error) {
-      console.error('Erreur lors de la création de la conversation:', error)
-      return null
+      console.error('Erreur lors de la création d\'une nouvelle conversation:', error)
     } finally {
       loadingConversations.value = false
     }
@@ -120,7 +166,10 @@ const useConversations = () => {
   return {
     conversations,
     loadingConversations,
+    isSearching,
     fetchConversations,
+    searchConversations,
+    clearSearch,
     createConversation,
     updateConversation
   }
@@ -236,6 +285,27 @@ const updateTitle = async () => {
 const cancelEditTitle = () => {
   editedTitle.value = currentConversation.value?.title || ''
   showEditTitle.value = false
+}
+
+const scrollToMessage = (messageId) => {
+  console.log('Défilement vers le message:', messageId)
+  // Trouver l'élément du message par son ID
+  const messageElement = document.getElementById(`message-${messageId}`)
+  
+  if (messageElement) {
+    // Faire défiler jusqu'au message
+    messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    
+    // Ajouter une classe pour mettre en évidence le message pendant un moment
+    messageElement.classList.add('highlight-message')
+    
+    // Retirer la classe après un délai
+    setTimeout(() => {
+      messageElement.classList.remove('highlight-message')
+    }, 2000)
+  } else {
+    console.warn(`Message avec l'ID ${messageId} non trouvé dans le DOM`)
+  }
 }
 
 watch(showEditTitle, async (newValue) => {
@@ -445,5 +515,36 @@ watch(showEditTitle, async (newValue) => {
 
 .dark .input-wrapper {
   border-top-color: #334155;
+}
+
+.search-wrapper {
+  padding: 0 1rem;
+  margin-bottom: 1rem;
+}
+
+.highlight-message {
+  animation: highlight-pulse 2s ease-in-out;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+}
+
+.dark .highlight-message {
+  animation: dark-highlight-pulse 2s ease-in-out;
+}
+
+@keyframes dark-highlight-pulse {
+  0%, 100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(59, 130, 246, 0.2);
+  }
 }
 </style>

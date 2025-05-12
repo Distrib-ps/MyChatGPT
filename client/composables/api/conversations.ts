@@ -54,11 +54,24 @@ export const useConversationsApi = () => {
     }
   }
 
+  const searchConversations = async (keyword: string): Promise<Conversation[]> => {
+    try {
+      console.log('API - Recherche de conversations avec le mot-clé:', keyword)
+      const response = await api.get(`/conversations/search?keyword=${encodeURIComponent(keyword.trim())}`)
+      console.log('API - Résultats de recherche reçus:', response.data.length)
+      return response.data
+    } catch (error) {
+      console.error('Erreur lors de la recherche de conversations:', error)
+      throw error
+    }
+  }
+
   return {
     getConversations,
     getConversation,
     createConversation,
     updateConversation,
-    deleteConversation
+    deleteConversation,
+    searchConversations
   }
 }

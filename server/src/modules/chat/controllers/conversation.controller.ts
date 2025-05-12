@@ -10,6 +10,8 @@ import {
   Query,
   Req,
   ValidationPipe,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { ConversationService } from '../services/conversation.service';
 import { Conversation } from '../entities/conversation.entity';
@@ -38,8 +40,28 @@ export class ConversationController {
     @Query('keyword') keyword: string,
   ): Promise<Conversation[]> {
     const userId = req.user['id'];
-    console.log('User ID from request (search):', userId);
-    return this.conversationService.searchByKeyword(userId, keyword);
+    console.log(
+      'Controller - Recherche pour utilisateur:',
+      userId,
+      'avec mot-clé:',
+      keyword,
+    );
+
+    try {
+      // Appeler le service de recherche avec le mot-clé
+      const results = await this.conversationService.searchByKeyword(
+        userId,
+        keyword,
+      );
+      console.log(`Controller - ${results.length} conversations trouvées`);
+      return results;
+    } catch (error) {
+      console.error('Erreur lors de la recherche de conversations:', error);
+      throw new HttpException(
+        'Erreur lors de la recherche de conversations',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @UseGuards(JwtAuthGuard)

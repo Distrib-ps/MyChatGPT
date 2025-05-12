@@ -54,11 +54,24 @@ export const useMessagesApi = () => {
     }
   }
 
+  const searchMessages = async (conversationId: string, keyword: string): Promise<Message[]> => {
+    try {
+      console.log(`Recherche de messages contenant "${keyword}" dans la conversation ${conversationId}`)
+      const response = await api.get(`/messages/conversation/${conversationId}/search?keyword=${encodeURIComponent(keyword)}`)
+      console.log(`${response.data.length} messages trouvés contenant "${keyword}"`)
+      return response.data
+    } catch (error) {
+      console.error(`Error searching messages in conversation ${conversationId} with keyword "${keyword}":`, error)
+      throw error
+    }
+  }
+
   return {
     getMessages,
     sendUserMessage,
     generateAIResponse,
     updateMessage,
-    deleteMessage
+    deleteMessage,
+    searchMessages
   }
 }
