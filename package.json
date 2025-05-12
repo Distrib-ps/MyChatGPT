@@ -4,10 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install",
     "lint": "cd server && npm run lint",
-    "test:server": "cd server && npm run test"
+    "test:server": "cd server && npm run test",
+    "test:client": "cd client && npm run test",
+    "test:e2e": "cd e2e-tests && npx playwright test",
+    "test:e2e:login": "cd e2e-tests && npx playwright test tests/login-flow.spec.ts",
+    "test:e2e:basic": "cd e2e-tests && npx playwright test tests/basic.spec.ts",
+    "test:e2e:edit": "cd e2e-tests && npx playwright test tests/edit-message.spec.ts",
+    "test": "npm run test:server && npm run test:client"
   },
   "keywords": [],
   "author": "",
