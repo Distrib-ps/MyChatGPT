@@ -30,10 +30,15 @@
           </div>
         </div>
         <div class="message-content">
-          <div class="message-text typing-indicator">
-            <span></span>
-            <span></span>
-            <span></span>
+          <div class="message-text">
+            <div class="thinking-container">
+              <span class="thinking-text">L'IA réfléchit</span>
+              <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -256,6 +261,22 @@ const normalizeRole = (role) => {
   color: #94a3b8;
 }
 
+/* Thinking container */
+.thinking-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.thinking-text {
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.dark .thinking-text {
+  color: #e2e8f0;
+}
+
 /* Typing indicator */
 .typing-indicator {
   display: flex;
@@ -264,12 +285,16 @@ const normalizeRole = (role) => {
 }
 
 .typing-indicator span {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   background-color: #6b7280;
   border-radius: 50%;
   display: inline-block;
   animation: typing 1.4s infinite ease-in-out both;
+}
+
+.dark .typing-indicator span {
+  background-color: #94a3b8;
 }
 
 .typing-indicator span:nth-child(1) {

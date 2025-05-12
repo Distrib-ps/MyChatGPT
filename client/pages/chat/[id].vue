@@ -43,7 +43,7 @@
         </div>
         
         <div class="messages-wrapper">
-          <MessageList :messages="messages" :loading="loadingMessages" />
+          <MessageList :messages="messages" :loading="sendingMessage" />
         </div>
         
         <div class="input-wrapper">
@@ -150,11 +150,13 @@ const useMessages = (conversationId) => {
   const sendMessage = async (content) => {
     if (!conversationId.value || !content.trim()) return
     
-    sendingMessage.value = true
     try {
       // Envoyer le message utilisateur
       const userMessage = await messagesApi.sendUserMessage(conversationId.value, content)
       messages.value.push(userMessage)
+      
+      // Activer l'indicateur "L'IA réfléchit..."
+      sendingMessage.value = true
       
       // Générer la réponse de l'IA
       const aiResponse = await messagesApi.generateAIResponse(conversationId.value)
