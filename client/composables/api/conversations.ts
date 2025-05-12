@@ -93,12 +93,51 @@ export const useConversationsApi = () => {
     }
   }
 
+  const generateShareId = async (id: string): Promise<string> => {
+    try {
+      console.log(`API - Génération d'un ID de partage pour la conversation ${id}`)
+      const response = await api.post(`/conversations/${id}/share`)
+      console.log('API - ID de partage généré:', response.data.shareId)
+      return response.data.shareId
+    } catch (error) {
+      console.error(`Erreur lors de la génération de l'ID de partage pour la conversation ${id}:`, error)
+      throw error
+    }
+  }
+
+  const removeShareId = async (id: string): Promise<void> => {
+    try {
+      console.log(`API - Suppression de l'ID de partage pour la conversation ${id}`)
+      await api.delete(`/conversations/${id}/share`)
+      console.log(`API - ID de partage supprimé pour la conversation ${id}`)
+    } catch (error) {
+      console.error(`Erreur lors de la suppression de l'ID de partage pour la conversation ${id}:`, error)
+      throw error
+    }
+  }
+
+  const getSharedConversation = async (shareId: string): Promise<Conversation> => {
+    try {
+      console.log(`API - Récupération de la conversation partagée avec l'ID ${shareId}`)
+      // L'endpoint correct est /conversations/share/:shareId
+      const response = await api.get(`/conversations/share/${shareId}`)
+      console.log('Réponse de l\'API pour la conversation partagée:', response.data)
+      return response.data
+    } catch (error) {
+      console.error(`Erreur lors de la récupération de la conversation partagée ${shareId}:`, error)
+      throw error
+    }
+  }
+
   return {
     getConversations,
     getConversation,
     createConversation,
     updateConversation,
     deleteConversation,
-    searchConversations
+    searchConversations,
+    generateShareId,
+    removeShareId,
+    getSharedConversation
   }
 }

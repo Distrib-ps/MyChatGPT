@@ -27,5 +27,11 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
       ]
     }
+  },
+  // Configuration des routes
+  pages: true,
+  // Assurer que les routes dynamiques sont correctement générées
+  experimental: {
+    payloadExtraction: false
   }
 })
