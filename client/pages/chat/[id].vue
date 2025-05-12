@@ -1,6 +1,9 @@
 <template>
   <div class="chat-page">
     <div class="sidebar">
+      <div v-if="isDeletingConversation" class="loading-banner">
+        Suppression en cours...
+      </div>
       <ConversationList 
         :conversations="conversations" 
         :loading="loadingConversations"
@@ -8,6 +11,7 @@
         @select="selectConversation"
         @search="searchConversations"
         @clearSearch="clearSearch"
+        @delete="deleteConversation"
       />
     </div>
     <div class="main-content">
@@ -79,11 +83,19 @@ import MessageInput from '~/components/chat/MessageInput.vue'
 import MessageSearch from '~/components/chat/MessageSearch.vue'
 
 import { useConversationsApi } from '~/composables/api/conversations'
+import { useMessagesApi } from '~/composables/api/messages'
 
+// Définition des routes et du router
+const route = useRoute()
+const router = useRouter()
+const conversationId = computed(() => route.params.id)
+
+// Composable pour gérer les conversations
 const useConversations = () => {
   const conversations = ref([])
   const loadingConversations = ref(true)
   const isSearching = ref(false)
+  const isDeletingConversation = ref(false)
   const conversationsApi = useConversationsApi()
   
   const fetchConversations = async () => {
@@ -148,18 +160,67 @@ const useConversations = () => {
   
   const updateConversation = async (id, title) => {
     try {
-      const updatedConversation = await conversationsApi.updateConversation(id, title)
-      
-      // Mettre à jour localement
+      await conversationsApi.updateConversation(id, title)
+      // Mettre à jour le titre dans la liste des conversations
       const index = conversations.value.findIndex(c => c.id === id)
       if (index !== -1) {
-        conversations.value[index] = updatedConversation
+        conversations.value[index].title = title
       }
-      
-      return updatedConversation
     } catch (error) {
       console.error(`Erreur lors de la mise à jour de la conversation ${id}:`, error)
-      throw error
+    }
+  }
+  
+  // Fonction principale de suppression
+  const deleteConversation = async (id) => {
+    console.log(`Page - Début de la suppression de la conversation: ${id}`)
+    console.log('Type de l\'ID:', typeof id, 'Valeur:', id)
+    
+    // Vérifier que l'ID est valide
+    if (!id) {
+      console.error('ID de conversation invalide')
+      return
+    }
+    
+    // Pas de confirmation requise
+    console.log(`Suppression de la conversation ${id} en cours...`)
+    
+    isDeletingConversation.value = true
+    
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        throw new Error('Aucun token d\'authentification trouvé')
+      }
+      
+      const response = await fetch(`http://localhost:3000/conversations/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      console.log('Réponse de l\'API:', response)
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }))
+        throw new Error(errorData.message || `Erreur HTTP: ${response.status}`)
+      }
+      
+      // Supprimer la conversation de la liste locale
+      conversations.value = conversations.value.filter(c => c.id !== id)
+      
+      // Si la conversation supprimée est la conversation actuelle, rediriger vers la page principale
+      if (conversationId.value === id) {
+        console.log('Redirection vers la page principale après suppression de la conversation actuelle')
+        router.push('/chat')
+      }
+      
+    } catch (error) {
+      console.error(`Erreur lors de la suppression de la conversation ${id}:`, error)
+    } finally {
+      isDeletingConversation.value = false
     }
   }
   
@@ -167,16 +228,17 @@ const useConversations = () => {
     conversations,
     loadingConversations,
     isSearching,
+    isDeletingConversation,
     fetchConversations,
     searchConversations,
     clearSearch,
     createConversation,
-    updateConversation
+    updateConversation,
+    deleteConversation
   }
 }
 
-import { useMessagesApi } from '~/composables/api/messages'
-
+// Composable pour gérer les messages
 const useMessages = (conversationId) => {
   const messages = ref([])
   const loadingMessages = ref(true)
@@ -226,13 +288,28 @@ const useMessages = (conversationId) => {
   }
 }
 
-const route = useRoute()
-const router = useRouter()
-const conversationId = computed(() => route.params.id)
+// Initialisation des composables
+const { 
+  conversations, 
+  loadingConversations, 
+  isDeletingConversation,
+  fetchConversations, 
+  searchConversations,
+  clearSearch,
+  createConversation, 
+  updateConversation,
+  deleteConversation
+} = useConversations()
 
-const { conversations, loadingConversations, fetchConversations, createConversation, updateConversation } = useConversations()
-const { messages, loadingMessages, sendingMessage, fetchMessages, sendMessage } = useMessages(conversationId)
+const { 
+  messages, 
+  loadingMessages, 
+  sendingMessage, 
+  fetchMessages, 
+  sendMessage 
+} = useMessages(conversationId)
 
+// Computed properties
 const currentConversation = computed(() => {
   if (!conversationId.value) return null
   return conversations.value.find(conv => conv.id === conversationId.value)
@@ -247,11 +324,13 @@ const showEditTitle = ref(false)
 const editedTitle = ref('')
 const titleInputRef = ref(null)
 
+// Lifecycle hooks
 onMounted(async () => {
   await fetchConversations()
   await fetchMessages(conversationId.value)
 })
 
+// Watchers
 watch(conversationId, async (newId) => {
   if (newId) {
     await fetchMessages(newId)
@@ -264,19 +343,36 @@ watch(currentConversation, (newConversation) => {
   }
 })
 
+watch(showEditTitle, async (newValue) => {
+  if (newValue) {
+    await nextTick()
+    titleInputRef.value?.focus()
+  }
+})
+
+// Méthodes
 const selectConversation = (id) => {
   router.push(`/chat/${id}`)
 }
 
 const updateTitle = async () => {
-  if (!currentConversation.value) return
+  console.log('Début de la fonction updateTitle')
+  console.log('currentConversation:', currentConversation.value)
+  console.log('editedTitle:', editedTitle.value)
+  
+  if (!currentConversation.value) {
+    console.error('Conversation actuelle non définie')
+    return
+  }
   
   try {
+    console.log('Appel de updateConversation avec ID:', currentConversation.value.id, 'et titre:', editedTitle.value)
     // Appel API pour mettre à jour le titre sur le serveur
     await updateConversation(currentConversation.value.id, editedTitle.value)
     
     // Masquer l'éditeur de titre
     showEditTitle.value = false
+    console.log('Mise à jour du titre réussie')
   } catch (error) {
     console.error('Erreur lors de la mise à jour du titre:', error)
   }
@@ -307,13 +403,6 @@ const scrollToMessage = (messageId) => {
     console.warn(`Message avec l'ID ${messageId} non trouvé dans le DOM`)
   }
 }
-
-watch(showEditTitle, async (newValue) => {
-  if (newValue) {
-    await nextTick()
-    titleInputRef.value?.focus()
-  }
-})
 </script>
 
 <style scoped>
